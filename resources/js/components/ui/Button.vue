@@ -2,6 +2,7 @@
   <div class="inline-block">
     <button
         ref="buttonRef"
+        :title="text"
         :type="type"
         :id="id"
         :class="buttonClasses"
@@ -44,8 +45,8 @@
       type : {type: String, default: 'button'},
       text: { type: String, default: null },
       icon: { type: String, default: null },
-      variant: { type: String, default: 'default' },
       size: { type: String, default: 'md' },
+      variant: { type: String, default: 'default' },
       dropdown: { type: Array as () => string[], default: () => [] } // optional dropdown items
     })
 
@@ -55,11 +56,11 @@
     const showDropdown = ref(false)
 
     const buttonClasses = computed(() => {
-        const base = 'inline-flex items-center justify-center rounded-full transition-shadow shadow-sm border border-transparent cursor-pointer focus:outline-none focus:ring-2 focus:bg-white';
+        const base = 'inline-flex items-center justify-center rounded-full transition-shadow shadow-sm border border-transparent cursor-pointer p-2 focus:outline-none focus:ring-2 focus:bg-white';
         const sizes = {
-            sm: 'p-1 text-sm h-6',
-            md: 'p-2 text-sm h-8',
-            lg: 'p-3 text-base h-10',
+            sm: 'text-sm h-6',
+            md: 'text-sm h-8',
+            lg: 'text-base h-10',
         }
         const variants = {
             default: 'bg-white text-black ring-1 ring-gray-300 hover:ring-gray-500',

@@ -24,20 +24,13 @@ const props = defineProps<{
     }>;
 }>();
 
-const emit = defineEmits<{
-    // Emits a debounced event to trigger data fetching in the parent
-    (e: 'mapMoved', state: { center: [number, number]; zoom: number }): void;
-    // Emits when a native Leaflet marker is clicked
-    (e: 'markerClicked', point: any): void;
-}>();
-
 // 2. Reactive Refs and Map State
 const mapDiv = ref<HTMLElement | null>(null);
 const mapRef = ref<L.Map | null>(null);
 
 let currentLayer: L.TileLayer | L.LayerGroup | null = null;
 let markersLayer: L.LayerGroup | null = null; // Layer to hold all POI markers
-const calls = ref(0);
+let calls = ref(0);
 
 const layers = {
     normal: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }),
@@ -78,9 +71,14 @@ function createDivIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
     });
 }
 
+const emit = defineEmits<{
+    (e: 'mapMoved', state: { center: [number, number]; zoom: number }): void;
+    (e: 'markerClicked', point: any): void;
+}>();
+
 const debouncedEmitMapState = debounce(() => {
     if (!mapRef.value) return;
-    if (calls.value < 1) {
+    if (calls.value < 3) {
         calls.value += 1;
         return;
     }
@@ -99,11 +97,9 @@ function initMap() {
     if (!mapDiv.value) return;
 
     const map = L.map(mapDiv.value, { zoomControl: false }).setView(props.view, props.zoom);
+    // L.control.zoom({ position: 'bottomright' }).addTo(map);
     mapRef.value = map;
     markersLayer = L.layerGroup().addTo(map); // Initialize the markers layer
-
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
     currentLayer = layers.normal;
     currentLayer.addTo(map);
 

@@ -14,7 +14,18 @@
             </div>
 
             <div class="w-full min-w-0 px-1 md:w-1/2">
-                <Slider :items="categories" />
+                <Slider>
+                    <div v-if="categories.length > 0" class="flex max-w-screen min-w-0 gap-3 p-1 select-none">
+                        <Button
+                            v-for="(category, index) in categories"
+                            :key="category + '-' + index"
+                            :data-cat="category"
+                            :text="category"
+                            icon="person"
+                            class="flex-shrink-0 rounded-full text-sm font-semibold"
+                        />
+                    </div>
+                </Slider>
             </div>
         </div>
     </div>
@@ -24,6 +35,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Slider from '../components/Slider.vue';
+import Button from '../components/ui/Button.vue';
 import Icon from '../components/ui/Icon.vue';
 import Input from '../components/ui/Input.vue';
 

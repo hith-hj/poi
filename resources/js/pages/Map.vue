@@ -1,27 +1,3 @@
-<!-- <template>
-  <Head>
-    <title>Map</title>
-  </Head>
-  <TopNav />
-  <SideNav
-    v-if="map"
-    :fit-points="map.fitPoints"
-    :current-location="map.currentLocation"
-    :set-layer="map.setLayer"
-    @clear-selection="clearSelection"
-  />
-  <Main>
-    <LeafLet
-      ref="map"
-      :view="view"
-      :zoom="zoom"
-      :points="points"
-      @mapMoved="handleMapMoved"
-      @markerClicked="handleMarkerClicked"
-    />
-  </Main>
-</template>
--->
 <template>
     <Head>
         <title>Map</title>

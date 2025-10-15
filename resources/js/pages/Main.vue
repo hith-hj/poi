@@ -2,13 +2,15 @@
     <div class="relative h-screen w-screen overflow-hidden bg-slate-100 antialiased">
         <main>
             <slot />
+            <Footer/>
         </main>
     </div>
+
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-
+import Footer from '../components/Footer.vue';
 onMounted(async () => {
     try {
         // const fp = await FingerprintJS.load();
