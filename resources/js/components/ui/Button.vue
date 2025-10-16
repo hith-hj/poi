@@ -38,7 +38,10 @@
 <script setup lang='ts'>
     import { ref, computed, onMounted, nextTick} from 'vue'
     import Icon from './Icon.vue'
-    import { emitter } from '../../lib/emitter';
+
+    const emit = defineEmits<{
+      (e: 'select',layer: string): void;
+    }>();
 
     const props = defineProps({
       id: { type: String, default: () => `btn_id_${Math.floor(Math.random() * 100000)}` },
@@ -47,14 +50,13 @@
       icon: { type: String, default: null },
       size: { type: String, default: 'md' },
       variant: { type: String, default: 'default' },
-      dropdown: { type: Array as () => string[], default: () => [] } // optional dropdown items
+      dropdown: { type: Array as () => string[], default: () => [] }
     })
 
     const buttonRef = ref(null)
     const selectedItem = ref(null)
     const dropdownStyles = ref({})
     const showDropdown = ref(false)
-
     const buttonClasses = computed(() => {
         const base = 'inline-flex items-center justify-center rounded-full transition-shadow shadow-sm border border-transparent cursor-pointer p-2 focus:outline-none focus:ring-2 focus:bg-white';
         const sizes = {
@@ -112,7 +114,7 @@
     function handleSelect(item: string) {
         selectedItem.value = item
         showDropdown.value = false
-        emitter.emit('select', item)
+        emit('select', item)
     }
 
     function ucfirst(str) {

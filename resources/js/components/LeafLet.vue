@@ -2,6 +2,21 @@
     <div class="leaflet-wrapper">
         <div ref="mapDiv" id="map" class="leaflet-container relative z-10" />
     </div>
+    <Modal v-model="showPointModal">
+        <template #title>{{ selectedPoint?.name || 'Point of Interest' }}</template>
+
+        <div v-if="selectedPoint">
+            <p><strong>Coordinates:</strong> {{ selectedPoint.coords.join(', ') }}</p>
+            <p>This is a detailed description of the point and its heritage.</p>
+        </div>
+        <div v-else>
+            <p>Loading point details...</p>
+        </div>
+
+        <template #footer>
+            <button @click="showPointModal = false" class="rounded bg-blue-600 px-4 py-2 text-white">Close</button>
+        </template>
+    </Modal>
 </template>
 
 <script setup lang="ts">
@@ -9,8 +24,9 @@ import L from 'leaflet';
 import { debounce } from 'lodash-es';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import syriaGeoJson from '../lib/sy.json';
+import Modal from './ui/Modal.vue';
 
-// 1. Define Props and Emits
+
 const props = defineProps<{
     view: [number, number];
     zoom: number;
@@ -24,13 +40,9 @@ const props = defineProps<{
     }>;
 }>();
 
-// 2. Reactive Refs and Map State
-const mapDiv = ref<HTMLElement | null>(null);
-const mapRef = ref<L.Map | null>(null);
-
-let currentLayer: L.TileLayer | L.LayerGroup | null = null;
-let markersLayer: L.LayerGroup | null = null; // Layer to hold all POI markers
-let calls = ref(0);
+const emit = defineEmits<{
+    (e: 'mapMoved', state: { center: [number, number]; zoom: number }): void;
+}>();
 
 const layers = {
     normal: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }),
@@ -48,9 +60,34 @@ const layers = {
     ]),
 };
 
-// 3. Core Map Logic
-function createDivIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
-    // Add index
+let currentLayer: L.TileLayer | L.LayerGroup | null = null;
+let markersLayer: L.LayerGroup | null = null;
+const mapDiv = ref<HTMLElement | null>(null);
+const mapRef = ref<L.Map | null>(null);
+const showPointModal = ref(false);
+const selectedPoint = ref(null);
+let calls = ref(0);
+
+function initMap() {
+    if (!mapDiv.value) return;
+
+    const map = L.map(mapDiv.value, { zoomControl: false }).setView(props.view, props.zoom);
+    // L.control.zoom({ position: 'bottomright' }).addTo(map);
+    mapRef.value = map;
+    markersLayer = L.layerGroup().addTo(map);
+    currentLayer = layers.normal;
+    currentLayer.addTo(map);
+    map.on('moveend', debouncedEmitMapState);
+    map.on('zoomend', debouncedEmitMapState);
+
+    setBoundary();
+}
+
+function currentLocation() {
+    mapRef.value?.locate({ setView: true, maxZoom: 16 });
+}
+
+function createIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
     const html = `
     <div
       class="animated-marker"
@@ -71,14 +108,145 @@ function createDivIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
     });
 }
 
-const emit = defineEmits<{
-    (e: 'mapMoved', state: { center: [number, number]; zoom: number }): void;
-    (e: 'markerClicked', point: any): void;
-}>();
+function fitPoints() {
+  if (!mapRef?.value) return;
+
+  const layer = (markersLayer && ('value' in markersLayer ? markersLayer.value : markersLayer)) as any;
+  if (!layer) return;
+
+  let bounds: L.LatLngBounds | null = null;
+  if (typeof layer.getBounds === 'function') {
+    try {
+      bounds = layer.getBounds();
+    } catch {
+      bounds = null;
+    }
+  }
+
+  if (!bounds || !bounds.isValid || !bounds.isValid()) {
+    bounds = buildBounds(layer)
+  }
+
+  if (bounds && bounds.isValid && bounds.isValid()) {
+    mapRef.value.fitBounds(bounds, { padding: [5, 5],zoom:20 });
+  }
+}
+
+function buildBounds(layer){
+    const latlngs: L.LatLng[] = [];
+    const layers = typeof layer.getLayers === 'function' ? layer.getLayers() : [];
+    for (const l of layers) {
+      if (l && typeof l.getLatLng === 'function') {
+        const ll = l.getLatLng();
+        if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') latlngs.push(ll);
+      } else if (l && l.getBounds && typeof l.getBounds === 'function') {
+        const b = l.getBounds();
+        if (b && b.isValid && b.isValid()) {
+          latlngs.push(b.getSouthWest(), b.getNorthEast());
+        }
+      }
+    }
+    if (latlngs.length) return L.latLngBounds(latlngs);
+}
+
+function setLayer(layerName: keyof typeof layers) {
+    if (!mapRef?.value) return;
+    const map = mapRef.value;
+    const newLayer = layers[layerName];
+    if (!newLayer) {
+        console.warn(`Layer "${String(layerName)}" not found`);
+        return;
+    }
+
+    if (currentLayer && map.hasLayer(currentLayer)) {
+        try {
+            map.removeLayer(currentLayer);
+        } catch (err) {
+            console.warn('Failed to remove current layer', err);
+        }
+    }
+
+    try {
+        const layerToAdd = typeof newLayer === 'function' ? newLayer() : newLayer;
+        currentLayer = layerToAdd as any;
+        map.addLayer(currentLayer);
+    } catch (err) {
+        console.error('Failed to add new layer', err);
+        return;
+    }
+    setBoundary();
+}
+
+function setView(latlng: [number, number], zm?: number) {
+    if (!mapRef.value) return;
+    mapRef.value.setView(latlng, zm ?? mapRef.value.getZoom());
+}
+
+function setBoundary() {
+    if (!mapRef.value) return;
+    const highlightStyle = {
+        color: '#006400',
+        weight: 1,
+        fillColor: '#006400',
+        fillOpacity: 0.0,
+    };
+
+    const geoLayer = L.geoJSON(syriaGeoJson, {
+        style: highlightStyle,
+        onEachFeature: (feature, layer) => {
+            console.log(layer.getBounds())
+            layer.on({
+                // mouseover: () => layer.setStyle({ fillOpacity: 0.0 }),
+                // mouseout: () => layer.setStyle({ fillOpacity: 0.04 }),
+                click: () => setView(midpointSimple(
+                    layer.getBounds()._southWest,
+                    layer.getBounds()._northEast
+                ),getZoom()),
+            });
+        },
+    }).addTo(mapRef.value);
+
+    // fitBounds(geoLayer.getBounds());
+    setMaxBounds(geoLayer.getBounds());
+}
+
+function midpointSimple(a, b) {
+  return {
+    lat: (a.lat + b.lat) / 2,
+    lng: (a.lng + b.lng) / 2,
+  };
+}
+
+function setMaxBounds(bounds){
+    if (!mapRef.value) return;
+    mapRef.value.setMaxBounds(bounds);
+}
+
+function fitBounds(bounds){
+    if (!mapRef.value) return;
+    mapRef.value.fitBounds(bounds);
+}
+
+function getZoom(){
+    if (!mapRef.value) return;
+    return mapRef.value?.getZoom()
+}
+
+function destroyMap() {
+    if (!mapRef.value) return;
+    mapRef.value.off();
+    mapRef.value.remove();
+    mapRef.value = null;
+}
+
+function openModal(point){
+    selectedPoint.value = point;
+    showPointModal.value = true;
+}
 
 const debouncedEmitMapState = debounce(() => {
     if (!mapRef.value) return;
-    if (calls.value < 3) {
+    if (calls.value < 1) {
         calls.value += 1;
         return;
     }
@@ -93,93 +261,23 @@ const debouncedEmitMapState = debounce(() => {
     });
 }, 500);
 
-function initMap() {
-    if (!mapDiv.value) return;
+const clickHandler = (e: L.LeafletMouseEvent) => {
+    const map = mapRef.value;
+    if (!map || !e?.latlng) return;
+    const { lat, lng } = e.latlng;
+    const clickedCoords = { lat: +lat.toFixed(6), lng: +lng.toFixed(6) };
 
-    const map = L.map(mapDiv.value, { zoomControl: false }).setView(props.view, props.zoom);
-    // L.control.zoom({ position: 'bottomright' }).addTo(map);
-    mapRef.value = map;
-    markersLayer = L.layerGroup().addTo(map); // Initialize the markers layer
-    currentLayer = layers.normal;
-    currentLayer.addTo(map);
+    L.popup({ closeButton: true, autoClose: true })
+      .setLatLng(e.latlng)
+      .setContent(`Lat: ${clickedCoords.lat}, Lng: ${clickedCoords.lng}`)
+      .openOn(mapRef.value as L.Map);
+};
 
-    // Set up event listeners with the debounced function
-    map.on('moveend', debouncedEmitMapState);
-    map.on('zoomend', debouncedEmitMapState);
-
-    setBoundry();
-}
-
-function destroyMap() {
-    if (!mapRef.value) return;
-    mapRef.value.off();
-    mapRef.value.remove();
-    mapRef.value = null;
-}
-
-// 4. Methods exposed to the parent (Map.vue)
-function fitPoints() {
-    if (!mapRef.value || !markersLayer || markersLayer.getLayers().length === 0) return;
-
-    const bounds = markersLayer.getBounds();
-    if (bounds.isValid()) {
-        mapRef.value.fitBounds(bounds, { padding: [50, 50] });
-    }
-}
-
-function setLayer(layerName: keyof typeof layers) {
-    if (!mapRef.value || !currentLayer) return;
-
-    // Remove the old layer
-    mapRef.value.removeLayer(currentLayer);
-
-    // Add the new layer
-    currentLayer = layers[layerName];
-    currentLayer.addTo(mapRef.value);
-
-    // Ensure other layers (like boundary and markers) are on top
-    markersLayer?.bringToFront();
-}
-
-function currentLocation() {
-    mapRef.value?.locate({ setView: true, maxZoom: 16 });
-}
-
-function setView(latlng: [number, number], zm?: number) {
-    if (!mapRef.value) return;
-    mapRef.value.setView(latlng, zm ?? mapRef.value.getZoom());
-}
-
-function setBoundry() {
-    if (!mapRef.value) return;
-    const highlightStyle = {
-        color: '#006400',
-        weight: 1,
-        fillColor: '#006400',
-        fillOpacity: 0.0,
-    };
-
-    const geoLayer = L.geoJSON(syriaGeoJson as any, {
-        // Ensure syriaGeoJson is properly typed
-        style: highlightStyle,
-        onEachFeature: (feature, layer) => {
-            layer.on({
-                // mouseover: () => layer.setStyle({ fillOpacity: 0.0 }),
-                // mouseout: () => layer.setStyle({ fillOpacity: 0.0 }),
-                click: () => mapRef.value?.fitBounds(layer.getBounds()),
-            });
-        },
-    }).addTo(mapRef.value);
-
-    mapRef.value.fitBounds(geoLayer.getBounds());
-    mapRef.value.setMaxBounds(geoLayer.getBounds());
-}
-
-// 5. Lifecycle and Watchers
 onMounted(async () => {
     await nextTick();
     initMap();
     window.addEventListener('resize', () => mapRef.value?.invalidateSize());
+    mapRef.value.on('dblclick', clickHandler);
 });
 
 onBeforeUnmount(() => {
@@ -195,8 +293,6 @@ watch(
     () => props.zoom,
     (z) => mapRef.value?.setZoom(z),
 );
-
-// CRITICAL WATCHER: Handles all POI markers efficiently in one go
 watch(
     () => props.points,
     (newPoints) => {
@@ -208,11 +304,12 @@ watch(
 
         newPoints.forEach((point, index) => {
             const marker = L.marker(point.coords, {
-                icon: createDivIcon(point.color, point.size, index),
+                icon: createIcon(point.color, point.size, index),
             });
             // Attach click handler to emit event to the Vue parent
             marker.on('click', () => {
-                emit('markerClicked', point); // Pass the full point object back
+                openModal(point);
+                // setView(point.coords, mapRef.getZoom());
             });
 
             markersLayer?.addLayer(marker);
@@ -233,14 +330,4 @@ defineExpose({
 });
 </script>
 
-<style scoped>
-.leaflet-container {
-    width: 100%;
-    height: 100vh; /* Set a default height */
-}
-.leaflet-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-</style>
+
