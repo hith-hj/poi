@@ -2,7 +2,7 @@
     <Head>
         <title>Map</title>
     </Head>
-    <TopNav />
+    <TopNav @city="city"/>
     <SideNav
         v-if="map"
         :fit-points="map.fitPoints"
@@ -22,15 +22,14 @@ import SideNav from '../components/SideNav.vue';
 import TopNav from '../components/TopNav.vue';
 import Main from './Main.vue';
 
-// 1. Type the ref to access exposed methods
 const map = ref<InstanceType<typeof LeafLet> | null>(null);
 const { props } = usePage();
 const view = ref<[number, number]>(props.view);
-const points = ref<any[]>(Array.isArray(props.points) ? props.points : []);
+const points = ref<any[]>([]);
 const zoom = ref<number>(props.zoom);
 
-function alert(){
-    alert('hfdgd')
+function city(city){
+    alert(city)
 }
 
 function clearSelection() {

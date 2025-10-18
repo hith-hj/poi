@@ -35,7 +35,6 @@ const props = defineProps<{
         coords: [number, number];
         color: string;
         size: number;
-        // Add other POI properties you need to pass back on click
         name: string;
     }>;
 }>();
@@ -193,20 +192,18 @@ function setBoundary() {
 
     const geoLayer = L.geoJSON(syriaGeoJson, {
         style: highlightStyle,
-        onEachFeature: (feature, layer) => {
-            console.log(layer.getBounds())
-            layer.on({
-                // mouseover: () => layer.setStyle({ fillOpacity: 0.0 }),
-                // mouseout: () => layer.setStyle({ fillOpacity: 0.04 }),
-                click: () => setView(midpointSimple(
-                    layer.getBounds()._southWest,
-                    layer.getBounds()._northEast
-                ),getZoom()),
-            });
-        },
+        // onEachFeature: (feature, layer) => {
+        //     layer.on({
+        //         mouseover: () => layer.setStyle({ fillOpacity: 0.0 }),
+        //         mouseout: () => layer.setStyle({ fillOpacity: 0.04 }),
+        //         click: () => setView(midpointSimple(
+        //             layer.getBounds()._southWest,
+        //             layer.getBounds()._northEast
+        //         ),getZoom()),
+        //     });
+        // },
     }).addTo(mapRef.value);
 
-    // fitBounds(geoLayer.getBounds());
     setMaxBounds(geoLayer.getBounds());
 }
 

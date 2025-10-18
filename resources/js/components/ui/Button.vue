@@ -10,27 +10,16 @@
         @click="toggleDropdown"
         v-bind="$attrs"
     >
-        <Icon v-if="icon" :icon="icon" :size="size" />
-        <span v-if="text" class="truncate">{{ text }}</span>
+        <span v-if="text" class="truncate">{{ ucfirst(text) }}</span>
         <slot />
     </button>
-
-    <ul
-      v-if="showDropdown && dropdown.length"
-      :style="dropdownStyles"
-      class="bg-white border border-gray-300 rounded-md shadow-lg"
-    >
-        <li
-            v-for="(item, index) in dropdown"
-            :key="index"
-            class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-            :class="{ 'bg-gray-200 font-semibold': item === selectedItem }"
-            @click="handleSelect(item)"
-        >
-            <Icon v-if="icon" :icon="icon" />
-            {{ ucfirst(item) }}
-        </li>
-    </ul>
+    <List
+        v-if="dropdown.length > 0"
+        :items="dropdown"
+        :elementRef="buttonRef"
+        :showDropdown="showDropdown"
+        @select="handleSelect"
+    />
   </div>
 </template>
 
@@ -38,6 +27,7 @@
 <script setup lang='ts'>
     import { ref, computed, onMounted, nextTick} from 'vue'
     import Icon from './Icon.vue'
+    import List from './List.vue'
 
     const emit = defineEmits<{
       (e: 'select',layer: string): void;

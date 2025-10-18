@@ -14,7 +14,7 @@
         },
         size: {
             type: String,
-            default: 'sm'
+            default: 'md'
         },
         color: {
             type: String,

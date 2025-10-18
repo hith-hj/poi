@@ -15,14 +15,14 @@
 
             <div class="w-full min-w-0 px-1 md:w-1/2">
                 <Slider>
-                    <div v-if="categories.length > 0" class="flex max-w-screen min-w-0 gap-3 p-1 select-none">
+                    <div v-if="cities.length > 0" class="flex max-w-screen min-w-0 gap-3 p-1 select-none">
                         <Button
-                            v-for="(category, index) in categories"
-                            :key="category + '-' + index"
-                            :data-cat="category"
-                            :text="category"
-                            icon="person"
+                            v-for="(city, index) in cities"
+                            :key="city + '-' + index"
+                            :data-cat="city"
+                            :text="city"
                             class="flex-shrink-0 rounded-full text-sm font-semibold"
+                            @click="emit('city',city)"
                         />
                     </div>
                 </Slider>
@@ -34,12 +34,16 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import Slider from '../components/Slider.vue';
 import Button from '../components/ui/Button.vue';
-import Icon from '../components/ui/Icon.vue';
 import Input from '../components/ui/Input.vue';
+import Slider from '../components/Slider.vue';
+import Icon from '../components/ui/Icon.vue';
+import List from '../components/ui/List.vue';
 
+const emit = defineEmits<{
+      (e: 'city',city: string): void;
+    }>();
 const { props } = usePage();
-const categories = ref(props.categories);
+const cities = ref(props.cities);
 const search = ref('');
 </script>

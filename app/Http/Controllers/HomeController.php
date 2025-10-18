@@ -16,7 +16,8 @@ class HomeController extends Controller
         $view = [33.512767, 36.274889];
         $points = $this->points(5);
         $categories = $this->categories();
-        return Inertia::render('Map', compact('zoom', 'view', 'points', 'categories'));
+        $cities = $this->cities();
+        return Inertia::render('Map', compact('zoom', 'view', 'points', 'categories','cities'));
     }
 
     public function getPoints(Request $request)
@@ -66,6 +67,21 @@ class HomeController extends Controller
             'Transit',
             'Pharmacies',
             'ATMs',
+        ];
+    }
+
+    private function cities()
+    {
+        return [
+            'damascus',
+            'damascus cd',
+            'aleppo',
+            'hamah',
+            'homs',
+            'latakia',
+            'tartus',
+            'daraa',
+            'idlib',
         ];
     }
 }
