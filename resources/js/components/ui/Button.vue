@@ -1,119 +1,110 @@
 <template>
   <div class="inline-block">
     <button
-        ref="buttonRef"
-        :title="text"
-        :type="type"
-        :id="id"
-        :class="buttonClasses"
-        :aria-label="text"
-        @click="toggleDropdown"
-        v-bind="$attrs"
+      ref="buttonRef"
+      :title="text"
+      :type="type"
+      :id="id"
+      :class="buttonClasses"
+      :aria-label="text"
+      @click="onButtonClick"
+      v-bind="forwardAttrs"
     >
-        <span v-if="text" class="truncate">{{ ucfirst(text) }}</span>
-        <slot />
+      <slot />
     </button>
+
     <List
-        v-if="dropdown.length > 0"
-        :items="dropdown"
-        :elementRef="buttonRef"
-        :showDropdown="showDropdown"
-        @select="handleSelect"
+      v-if="dropdown.length > 0"
+      :items="dropdown"
+      :elementRef="buttonRef"
+      :showDropdown="showDropdown"
+      @select="onSelect"
     />
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref, computed, nextTick, onMounted, toRefs } from 'vue'
+import List from './List.vue'
 
-<script setup lang='ts'>
-    import { ref, computed, onMounted, nextTick} from 'vue'
-    import Icon from './Icon.vue'
-    import List from './List.vue'
+const emit = defineEmits<{ (e: 'select', layer: string): void; (e: 'click', eObj: MouseEvent): void }>();
 
-    const emit = defineEmits<{
-      (e: 'select',layer: string): void;
-    }>();
+const props = defineProps({
+  id: { type: String, default: () => `btn_id_${Math.floor(Math.random() * 100000)}` },
+  type: { type: String, default: 'button' },
+  text: { type: String, default: null },
+  icon: { type: String, default: null },
+  size: { type: String, default: 'md' },
+  variant: { type: String, default: 'default' },
+  dropdown: { type: Array as () => string[], default: () => [] }
+})
 
-    const props = defineProps({
-      id: { type: String, default: () => `btn_id_${Math.floor(Math.random() * 100000)}` },
-      type : {type: String, default: 'button'},
-      text: { type: String, default: null },
-      icon: { type: String, default: null },
-      size: { type: String, default: 'md' },
-      variant: { type: String, default: 'default' },
-      dropdown: { type: Array as () => string[], default: () => [] }
-    })
+const forwardAttrs = {} as Record<string, unknown>
 
-    const buttonRef = ref(null)
-    const selectedItem = ref(null)
-    const dropdownStyles = ref({})
-    const showDropdown = ref(false)
-    const buttonClasses = computed(() => {
-        const base = 'inline-flex items-center justify-center rounded-full transition-shadow shadow-sm border border-transparent cursor-pointer p-2 focus:outline-none focus:ring-2 focus:bg-white';
-        const sizes = {
-            sm: 'text-sm h-6',
-            md: 'text-sm h-8',
-            lg: 'text-base h-10',
-        }
-        const variants = {
-            default: 'bg-white text-black ring-1 ring-gray-300 hover:ring-gray-500',
-            success: 'bg-green-300 text-white hover:bg-green-500',
-            danger: 'bg-red-300 text-white hover:bg-red-500',
-        }
+const buttonRef = ref<HTMLElement | null>(null)
+const selectedItem = ref<string | null>(null)
+const dropdownStyles = ref<Record<string, string>>({})
+const showDropdown = ref(false)
 
-        let classes = `${base} ${sizes[props.size] || sizes.md} ${variants[props.variant] || variants.default}`;
-        if (props.icon && props.text) classes += ' h-[30px] w-fit gap-2'
-        if (props.icon && !props.text) classes += ' h-[35px] w-[35px]'
-        return classes.trim()
-    })
+const buttonClasses = computed(() => {
+  const base = 'p-2 rounded-full shadow cursor-pointer bg-white'
+  const sizes: Record<string, string> = { sm: 'text-sm', md: 'text-md', lg: 'text-lg' }
+  const variants: Record<string, string> = {
+    default: 'text-black ring-1 ring-gray-200 hover:ring-gray-600',
+    success: 'text-green-300 ring-2 ring-green-300 hover:ring-green-500',
+    danger: 'text-red-300 ring-2 ring-red-300 hover:ring-red-500'
+  }
 
-    function toggleDropdown() {
-        showDropdown.value = !showDropdown.value
-        if (showDropdown.value) nextTick(positionDropdown)
-    }
+  return `${base} ${sizes[props.size] || sizes.md} ${variants[props.variant] || variants.default}`.trim()
+})
 
-    function positionDropdown() {
-        const button = buttonRef.value
-        if (!button) return
+function onButtonClick(e: MouseEvent) {
+  // Emit a single 'click' from this component so parent can listen with @click="..."
+  emit('click', e)
+  // Toggle dropdown as a component-internal action
+  showDropdown.value = !showDropdown.value
+  if (showDropdown.value) nextTick(positionDropdown)
+}
 
-        const rect = button.getBoundingClientRect()
-        const dropdownWidth = 100
-        const dropdownHeight = props.dropdown.length * 40
+function positionDropdown() {
+  const button = buttonRef.value
+  if (!button) return
 
-        let top = rect.bottom + 8
-        let left = rect.left
+  const rect = button.getBoundingClientRect()
+  const dropdownWidth = rect.width + 10
+  const dropdownHeight = props.dropdown.length * 40
 
-        // Prevent overflow bottom
-        if (top + dropdownHeight > window.innerHeight) {
-            top = window.innerHeight - dropdownHeight - 8
-        }
+  let top = rect.bottom + 8
+  let left = rect.left
 
-        // Prevent overflow right
-        if (left + dropdownWidth > window.innerWidth) {
-            left = window.innerWidth - dropdownWidth - 8
-        }
+  if (top + dropdownHeight > window.innerHeight) {
+    top = window.innerHeight - dropdownHeight - 8
+  }
 
-        dropdownStyles.value = {
-        position: 'fixed',
-        top: `${top}px`,
-        left: `${left}px`,
-        width: `${dropdownWidth}px`,
-        zIndex: 9999,
-        }
-    }
+  if (left + dropdownWidth > window.innerWidth) {
+    left = window.innerWidth - dropdownWidth - 8
+  }
 
-    function handleSelect(item: string) {
-        selectedItem.value = item
-        showDropdown.value = false
-        emit('select', item)
-    }
+  dropdownStyles.value = {
+    position: 'fixed',
+    top: `${top}px`,
+    left: `${left}px`,
+    width: `${dropdownWidth}px`,
+    zIndex: '9999'
+  }
+}
 
-    function ucfirst(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+function onSelect(item: string) {
+  selectedItem.value = item
+  // Close dropdown but do not emit a synthetic click here
+  showDropdown.value = false
+  emit('select', item)
+}
 
-    onMounted(()=>{
-        if(props.dropdown.length > 0){
-            handleSelect(props.dropdown[0])
-        }
-    })
+onMounted(() => {
+  if (props.dropdown.length > 0 && showDropdown.value) {
+    onSelect(props.dropdown[0])
+  }
+})
 </script>
+

@@ -10,8 +10,9 @@
       class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
       :class="{ 'bg-gray-200 font-semibold': item === selected }"
       @click="selectItem(item)"
+      :title="item"
     >
-      {{ capitalize(item) }}
+      {{ ucfirst(item) }}
     </li>
   </ul>
 </template>
@@ -19,13 +20,14 @@
 <script setup lang="ts">
     import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
     import type { PropType, Ref } from 'vue'
-
+    import {ucfirst} from '../../lib/utils.ts'
+    import Icon from './Icon.vue'
     const emit = defineEmits<{ (e: 'select', item: string): void }>()
-
     const props = defineProps({
       items: { type: Array as PropType<string[]>, default: () => [] },
       elementRef: { type: Object as PropType<Ref<HTMLButtonElement | null>>, default: () => null },
-      showDropdown: { type: Boolean, default: false }
+      showDropdown: { type: Boolean, default: false },
+      multiple: { type: Boolean, default: false }
     })
 
     const dropdownStyles = ref<Record<string, string>>({})
@@ -34,10 +36,6 @@
     function selectItem(item: string) {
       selected.value = item
       emit('select', item)
-    }
-
-    function capitalize(str: string) {
-      return str.charAt(0).toUpperCase() + str.slice(1)
     }
 
     function dropdownPosition() {

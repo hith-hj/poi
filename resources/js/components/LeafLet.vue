@@ -26,7 +26,6 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import syriaGeoJson from '../lib/sy.json';
 import Modal from './ui/Modal.vue';
 
-
 const props = defineProps<{
     view: [number, number];
     zoom: number;
@@ -65,20 +64,18 @@ const mapDiv = ref<HTMLElement | null>(null);
 const mapRef = ref<L.Map | null>(null);
 const showPointModal = ref(false);
 const selectedPoint = ref(null);
-let calls = ref(0);
+const calls = ref(0);
 
 function initMap() {
     if (!mapDiv.value) return;
 
     const map = L.map(mapDiv.value, { zoomControl: false }).setView(props.view, props.zoom);
-    // L.control.zoom({ position: 'bottomright' }).addTo(map);
     mapRef.value = map;
     markersLayer = L.layerGroup().addTo(map);
     currentLayer = layers.normal;
     currentLayer.addTo(map);
     map.on('moveend', debouncedEmitMapState);
     map.on('zoomend', debouncedEmitMapState);
-
     setBoundary();
 }
 
@@ -108,42 +105,42 @@ function createIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
 }
 
 function fitPoints() {
-  if (!mapRef?.value) return;
+    if (!mapRef?.value) return;
 
-  const layer = (markersLayer && ('value' in markersLayer ? markersLayer.value : markersLayer)) as any;
-  if (!layer) return;
+    const layer = (markersLayer && ('value' in markersLayer ? markersLayer.value : markersLayer)) as any;
+    if (!layer) return;
 
-  let bounds: L.LatLngBounds | null = null;
-  if (typeof layer.getBounds === 'function') {
-    try {
-      bounds = layer.getBounds();
-    } catch {
-      bounds = null;
+    let bounds: L.LatLngBounds | null = null;
+    if (typeof layer.getBounds === 'function') {
+        try {
+            bounds = layer.getBounds();
+        } catch {
+            bounds = null;
+        }
     }
-  }
 
-  if (!bounds || !bounds.isValid || !bounds.isValid()) {
-    bounds = buildBounds(layer)
-  }
+    if (!bounds || !bounds.isValid || !bounds.isValid()) {
+        bounds = buildBounds(layer);
+    }
 
-  if (bounds && bounds.isValid && bounds.isValid()) {
-    mapRef.value.fitBounds(bounds, { padding: [5, 5],zoom:20 });
-  }
+    if (bounds && bounds.isValid && bounds.isValid()) {
+        mapRef.value.fitBounds(bounds, { padding: [5, 5], zoom: 20 });
+    }
 }
 
-function buildBounds(layer){
+function buildBounds(layer) {
     const latlngs: L.LatLng[] = [];
     const layers = typeof layer.getLayers === 'function' ? layer.getLayers() : [];
     for (const l of layers) {
-      if (l && typeof l.getLatLng === 'function') {
-        const ll = l.getLatLng();
-        if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') latlngs.push(ll);
-      } else if (l && l.getBounds && typeof l.getBounds === 'function') {
-        const b = l.getBounds();
-        if (b && b.isValid && b.isValid()) {
-          latlngs.push(b.getSouthWest(), b.getNorthEast());
+        if (l && typeof l.getLatLng === 'function') {
+            const ll = l.getLatLng();
+            if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') latlngs.push(ll);
+        } else if (l && l.getBounds && typeof l.getBounds === 'function') {
+            const b = l.getBounds();
+            if (b && b.isValid && b.isValid()) {
+                latlngs.push(b.getSouthWest(), b.getNorthEast());
+            }
         }
-      }
     }
     if (latlngs.length) return L.latLngBounds(latlngs);
 }
@@ -207,26 +204,26 @@ function setBoundary() {
     setMaxBounds(geoLayer.getBounds());
 }
 
-function midpointSimple(a, b) {
-  return {
-    lat: (a.lat + b.lat) / 2,
-    lng: (a.lng + b.lng) / 2,
-  };
-}
-
-function setMaxBounds(bounds){
+function setMaxBounds(bounds) {
     if (!mapRef.value) return;
     mapRef.value.setMaxBounds(bounds);
 }
 
-function fitBounds(bounds){
-    if (!mapRef.value) return;
-    mapRef.value.fitBounds(bounds);
-}
+// function midpointSimple(a, b) {
+//   return {
+//     lat: (a.lat + b.lat) / 2,
+//     lng: (a.lng + b.lng) / 2,
+//   };
+// }
 
-function getZoom(){
+// function fitBounds(bounds){
+//     if (!mapRef.value) return;
+//     mapRef.value.fitBounds(bounds);
+// }
+
+function getZoom() {
     if (!mapRef.value) return;
-    return mapRef.value?.getZoom()
+    return mapRef.value?.getZoom();
 }
 
 function destroyMap() {
@@ -236,7 +233,7 @@ function destroyMap() {
     mapRef.value = null;
 }
 
-function openModal(point){
+function openModal(point) {
     selectedPoint.value = point;
     showPointModal.value = true;
 }
@@ -265,9 +262,9 @@ const clickHandler = (e: L.LeafletMouseEvent) => {
     const clickedCoords = { lat: +lat.toFixed(6), lng: +lng.toFixed(6) };
 
     L.popup({ closeButton: true, autoClose: true })
-      .setLatLng(e.latlng)
-      .setContent(`Lat: ${clickedCoords.lat}, Lng: ${clickedCoords.lng}`)
-      .openOn(mapRef.value as L.Map);
+        .setLatLng(e.latlng)
+        .setContent(`Lat: ${clickedCoords.lat}, Lng: ${clickedCoords.lng}`)
+        .openOn(mapRef.value as L.Map);
 };
 
 onMounted(async () => {
@@ -303,10 +300,8 @@ watch(
             const marker = L.marker(point.coords, {
                 icon: createIcon(point.color, point.size, index),
             });
-            // Attach click handler to emit event to the Vue parent
             marker.on('click', () => {
                 openModal(point);
-                // setView(point.coords, mapRef.getZoom());
             });
 
             markersLayer?.addLayer(marker);
@@ -315,7 +310,6 @@ watch(
     { deep: true, immediate: true },
 );
 
-// 6. Expose public methods
 defineExpose({
     getMap: () => mapRef.value,
     setView,
@@ -323,8 +317,7 @@ defineExpose({
     fitPoints,
     setLayer,
     currentLocation,
-    // NOTE: addMarker is now internal, managed by the points watcher
+    getZoom,
+    openModal,
 });
 </script>
-
-

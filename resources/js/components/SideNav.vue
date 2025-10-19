@@ -1,40 +1,48 @@
 <template>
-    <div class="absolute top-40 right-4 z-20 flex flex-col items-center gap-3 md:top-24">
+    <div class="absolute top-40 right-4 z-20 flex flex-col items-center gap-2 md:top-24">
         <Button id="profile" title="Profile" @click="openModal('profile')">
-          <Icon icon="person"/>
-        </Button>
-        <Button id="settings" title="Settings" @click="openModal('more')">
-          <Icon icon="three-dots-vertical"/>
+            <Icon icon="person" />
         </Button>
 
-        <Button id="toggleLayers" title="Toggle layers" :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
-            @select="cmProps.setLayer">
+        <!-- <Button id="toggleLayers" title="Toggle layers" :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
+            @select="setLayer">
          <Icon icon="layers"/>
-       </Button>
+       </Button> -->
 
-       <Button id="categories" title="categories" :dropdown="categories"
-            @select="selectedCategory">
-         <Icon icon="filter"/>
-       </Button>
-
-        <Button id="fitPoints" title="Fit in screen" @click="cmProps.fitPoints()">
-          <Icon icon="fullscreen"/>
+        <Button id="categories" title="categories" :dropdown="categories" @select="setCategory">
+            <Icon icon="filter" />
         </Button>
 
-        <Button id="currentLocation" title="Current location" @click="cmProps.currentLocation()">
-          <Icon icon="crosshair"/>
+        <Button id="fitPoints" title="Fit in screen" @click="fitPoints">
+            <Icon icon="fullscreen" />
         </Button>
 
-        <Button id="clearSelection" title="Clear selection" variant="danger" @click="emit('clearSelection')">
-         <Icon icon="arrow-clockwise"/>
-       </Button>
+        <Button id="currentLocation" title="Current location" @click="getCurrentLocation">
+            <Icon icon="crosshair" />
+        </Button>
+
+        <Button id="settings" title="Settings" @click="openModal('more')">
+            <Icon icon="three-dots-vertical" />
+        </Button>
+
+        <Button v-if="selection" id="clearSelection" title="Clear selection" variant="danger" @click="clearSelection">
+            <Icon icon="arrow-clockwise" color="danger" />
+        </Button>
     </div>
 
     <Modal v-model="modals.more" @update:modelValue="closeModal('more')">
         <template #title>More</template>
         <p>This is a reusable modal component.</p>
         <template #footer>
-          <button @click="closeModal('more')" class="rounded bg-blue-600 px-4 py-2 text-white">Got it</button>
+            <button @click="closeModal('more')" class="rounded bg-blue-600 px-4 py-2 text-white">Got it</button>
+        </template>
+    </Modal>
+
+    <Modal v-model="modals.profile" @update:modelValue="closeModal('profile')">
+        <template #title>More</template>
+        <p>This is a reusable modal component.</p>
+        <template #footer>
+            <button @click="closeModal('profile')" class="rounded bg-blue-600 px-4 py-2 text-white">Got it</button>
         </template>
     </Modal>
 </template>
@@ -44,35 +52,51 @@ import { usePage } from '@inertiajs/vue3';
 
 import { reactive, ref } from 'vue';
 import Button from '../components/ui/Button.vue';
-import Modal from '../components/ui/Modal.vue';
 import Icon from '../components/ui/Icon.vue';
+import Modal from '../components/ui/Modal.vue';
 
 const cmProps = defineProps<{
-  fitPoints: () => void;
-  currentLocation: () => void;
-  setLayer: (layer: string) => void;
+    map: InstanceType<typeof LeafLet>;
+    category: (category: string) => void;
+    selection: boolean;
 }>();
-
-
-const emit = defineEmits<{(e: 'clearSelection'): void;}>();
-
-const modals = reactive({
-  more: false,
-  profile: false,
-});
-
 const { props } = usePage();
 const categories = ref(props.categories);
+const emit = defineEmits<{ (e: 'clearSelection'): void; (e: 'category'): void }>();
+const modals = reactive({
+    more: false,
+    profile: false,
+});
+
+function setCategory(category: string) {
+    if (!category) return;
+    cmProps.category(category);
+}
+
+// function setLayer(layer: string){
+//   if(!layer || !cmProps.map) return;
+//   cmProps.map.setLayer(layer)
+// }
+
+function fitPoints() {
+    if (!cmProps.map) return;
+    cmProps.map.fitPoints();
+}
+
+function getCurrentLocation() {
+    if (!cmProps.map) return;
+    cmProps.map.currentLocation();
+}
+
+function clearSelection() {
+    emit('clearSelection');
+}
 
 function openModal(id: keyof typeof modals) {
-  modals[id] = true;
+    modals[id] = true;
 }
 
 function closeModal(id: keyof typeof modals) {
-  modals[id] = false;
-}
-
-function selectedCategory(cat){
-  console.log(cat)
+    modals[id] = false;
 }
 </script>

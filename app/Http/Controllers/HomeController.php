@@ -73,15 +73,15 @@ class HomeController extends Controller
     private function cities()
     {
         return [
-            'damascus',
-            'damascus cd',
-            'aleppo',
-            'hamah',
-            'homs',
-            'latakia',
-            'tartus',
-            'daraa',
-            'idlib',
+            ['name'=>'damascus','coords'=>[33.512767, 36.274889],'color'=>'red'],
+            ['name'=>'damascus dc','coords'=>[33.512767, 36.274889],'color'=>'red'],
+            ['name'=>'aleppo','coords'=>[36.199505, 37.162658],'color'=>'red'],
+            ['name'=>'hamah','coords'=>[35.132675, 36.754816],'color'=>'red'],
+            ['name'=>'homs','coords'=>[34.730171, 36.71489],'color'=>'red'],
+            ['name'=>'latakia','coords'=>[35.516782, 35.786514],'color'=>'red'],
+            ['name'=>'tartus','coords'=>[34.890717, 35.881522],'color'=>'red'],
+            ['name'=>'daraa','coords'=>[32.626574, 36.103226],'color'=>'red'],
+            ['name'=>'idlib','coords'=>[35.934373, 36.631113],'color'=>'red'],
         ];
     }
 }

@@ -2,10 +2,9 @@
     <div class="relative h-screen w-screen overflow-hidden bg-slate-100 antialiased">
         <main>
             <slot />
-            <Footer/>
+            <Footer />
         </main>
     </div>
-
 </template>
 
 <script setup lang="ts">
