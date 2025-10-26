@@ -1,24 +1,35 @@
 <template>
-    <div class="relative flex w-full items-center gap-1">
-        <Icon icon="chevron-left" v-if="showButtons && showLeftButton" @click="scrollBy(-scrollAmount)" class="rounded-l-full bg-white" size="sm" />
+    <div class="relative flex min-w-full items-center px-2">
+        <Icon
+            icon="chevron-left"
+            v-if="showButtons && showLeftButton"
+            @click="scrollBy(-scrollAmount)"
+            class="absolute top-1/2 left-0 -translate-y-1/2 rounded-l-full bg-gray-50 shadow"
+        />
 
         <div
             ref="slider"
-            class="no-scrollbar overflow-x-auto scroll-smooth whitespace-nowrap"
+            class="no-scrollbar max-w-full min-w-full overflow-x-auto scroll-smooth whitespace-nowrap"
             @pointerdown="onPointerDown"
             @pointerup="onPointerUp"
             @pointercancel="onPointerUp"
             @pointermove="onPointerMove"
             @scroll="updateButtonVisibility"
         >
-            <div class="flex max-w-screen min-w-0 gap-2 select-none">
+            <div class="flex w-full gap-2 select-none">
                 <slot />
             </div>
         </div>
 
-        <Icon icon="chevron-right" v-if="showButtons && showRightButton" @click="scrollBy(scrollAmount)" class="rounded-r-full bg-white" size="sm" />
+        <Icon
+            icon="chevron-right"
+            v-if="showButtons && showRightButton"
+            @click="scrollBy(scrollAmount)"
+            class="absolute top-1/2 right-0 -translate-y-1/2 rounded-r-full bg-gray-50 shadow"
+        />
     </div>
 </template>
+
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import Icon from '../components/ui/Icon.vue';
@@ -33,7 +44,7 @@ defineProps({
 const slider = ref<HTMLElement | null>(null);
 const dragging = ref(false);
 const startX = ref(0);
-const scrollAmount = 200;
+const scrollAmount = 250;
 const startScrollLeft = ref(0);
 const showButtons = ref(true);
 const showLeftButton = ref(false);
@@ -55,8 +66,10 @@ const updateButtonVisibility = () => {
         return;
     }
 
-    showLeftButton.value = el.scrollLeft > 0;
-    showRightButton.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+    const left = el.scrollLeft;
+    const sw = el.scrollWidth - 10;
+    showLeftButton.value = left > 0;
+    showRightButton.value = left + el.clientWidth < sw;
 };
 
 const onPointerDown = (e: PointerEvent) => {

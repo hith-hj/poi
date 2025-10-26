@@ -1,6 +1,6 @@
 <template>
-    <div class="leaflet-wrapper">
-        <div ref="mapDiv" id="map" class="leaflet-container relative z-10" />
+    <div class="absolute h-full w-screen">
+        <div ref="mapDiv" class="relative z-1 h-full w-full" />
     </div>
     <Modal v-model="showPointModal">
         <template #title>{{ selectedPoint?.name || 'Point of Interest' }}</template>
