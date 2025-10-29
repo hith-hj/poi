@@ -13,11 +13,12 @@ class HomeController extends Controller
     public function map()
     {
         $zoom = 15;
-        $view = [33.512767, 36.274889];
+        $city = 'damascus';
+        $view = [33.513767, 36.277889];
         $points = $this->points(5);
         $categories = $this->categories();
         $cities = $this->cities();
-        return Inertia::render('Map', compact('zoom', 'view', 'points', 'categories','cities'));
+        return Inertia::render('Map', compact('city','zoom', 'view', 'points', 'categories','cities'));
     }
 
     public function getPoints(Request $request)
@@ -73,7 +74,7 @@ class HomeController extends Controller
     private function cities()
     {
         return [
-            ['name'=>'damascus','coords'=>[33.512767, 36.274889],'color'=>'red'],
+            ['name'=>'damascus','coords'=>[33.513767, 36.277889],'color'=>'red'],
             ['name'=>'damascus dc','coords'=>[33.512767, 36.274889],'color'=>'red'],
             ['name'=>'aleppo','coords'=>[36.199505, 37.162658],'color'=>'red'],
             ['name'=>'hamah','coords'=>[35.132675, 36.754816],'color'=>'red'],

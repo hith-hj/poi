@@ -17,3 +17,15 @@ export interface User {
     created_at: string;
     updated_at: string;
 }
+
+export interface City {
+    name: string;
+    coords: [number, number];
+    // country: string; //'Syria';
+    // population: number; 1711000,
+    // timezone: string; 'Asia/Damascus',
+}
+
+export interface Category {
+  name: string;
+}

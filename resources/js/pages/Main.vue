@@ -1,7 +1,7 @@
 <template>
-    <div class="relative h-screen w-screen overflow-hidden bg-slate-100 antialiased">
+    <div class="relative h-screen w-screen overflow-hidden bg-slate-100 antialiased truncate">
         <Transition name="fade">
-            <Loader v-if="first" />
+            <Loader v-if="first" :dotCount="7"/>
         </Transition>
         <main>
             <slot />

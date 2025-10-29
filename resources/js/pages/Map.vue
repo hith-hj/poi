@@ -2,30 +2,47 @@
     <Head>
         <title>Map</title>
     </Head>
-    <TopNav @city="city" />
-    <SideNav v-if="map" :map="map" :category="category" :selection="selection" @clear-selection="clearSelection" />
+    <TopNav @city="city"
+        :selectedCity="selectedCity" />
+    <SideNav v-if="map"
+        :map="map"
+        :category="category"
+        :selection="selection"
+        @clear-selection="clearSelection" />
     <Main>
-        <LeafLet ref="map" :view="view" :zoom="zoom" :points="points" @mapMoved="fetchPoints" />
+        <LeafLet ref="map"
+        :view="props.view"
+        :zoom="zoom"
+        :points="points"
+        @mapMoved="fetchPoints" />
     </Main>
 </template>
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, reactive } from 'vue';
 import LeafLet from '../components/LeafLet.vue';
 import SideNav from '../components/SideNav.vue';
 import TopNav from '../components/TopNav.vue';
+import { emitter } from '../lib/emitter.ts';
+import { City as TCity } from '../types/index.d.js';
+
 import Main from './Main.vue';
 
 const map = ref<InstanceType<typeof LeafLet> | null>(null);
 const { props } = usePage();
-const view = ref<[number, number]>(props.view);
-const points = ref<any[]>([]);
-const zoom = ref<number>(props.zoom);
-const selection = ref(false);
+let view = ref<[number, number]>(props.view);
+let points = ref<any[]>([]);
+let zoom = ref<number>(props.zoom);
+let selection = ref<Boolean>(false);
+let selectedCity = ref<TCity>({
+  name: props.city,
+  coords: props.view,
+});
+let selectedCategory = ref<String|null>(null);
 
-function city(city) {
-    selection.value = true;
-    map.value.setView(city.coords, map.value.getZoom());
+function city(city: TCity) {
+    selectedCity.value = city;
+    map.value.setView(city.coords, 18);
 }
 
 function category(category) {
@@ -35,6 +52,7 @@ function category(category) {
 
 function clearSelection() {
     selection.value = false;
+    selectedCategory = null;
     console.log('clearing');
 }
 
@@ -51,7 +69,7 @@ async function fetchPoints(args: FetchPointsArgs = {}): Promise<void> {
 
     try {
         const params: string[] = [];
-
+        emitter.emit('loading',true)
         if (typeof zoom === 'number') params.push(`zoom=${encodeURIComponent(zoom)}`);
         if (Array.isArray(center) && center.length === 2) {
             params.push(`center=[${encodeURIComponent(center[0])},${encodeURIComponent(center[1])}]`);
@@ -69,6 +87,8 @@ async function fetchPoints(args: FetchPointsArgs = {}): Promise<void> {
         points.value = newPointsData?.points ?? [];
     } catch (error) {
         console.error('Error fetching points:', error);
+    }finally{
+        emitter.emit('loading',false)
     }
 }
 
