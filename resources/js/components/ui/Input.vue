@@ -6,12 +6,10 @@
     </label>
 
     <div class="relative">
-      <!-- Icon -->
-      <div
-        v-if="icon"
-        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10 text-gray-500"
-      >
-        <Icon :name="icon" class="h-5 w-5" />
+      <!-- prepend -->
+      <div v-if="prepend"
+        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10 text-gray-500">
+        <slot name="prepend"/>
       </div>
 
       <!-- Input -->
@@ -20,7 +18,7 @@
         :name="name"
         :type="type"
         :title="title"
-        v-model="inputValue"
+        v-model="localValue"
         :placeholder="placeholder"
         :autofocus="autofocus"
         :disabled="disabled"
@@ -29,14 +27,14 @@
         :class="[
           'py-2 block w-full text-sm text-gray-900 bg-white rounded-full transition-shadow shadow-sm',
           'border border-transparent focus:outline-none focus:ring-2 focus:ring-green-500',
-          icon ? 'pl-11' : 'pl-3'
+          prepend ? 'pl-10' : 'pl-3',
         ]"
       />
 
       <!-- Append slot & Clear button -->
       <div class="absolute inset-y-0 right-0 pr-2 flex items-center space-x-2 z-20">
         <Icon
-          v-if="inputValue"
+          v-if="localValue"
           type="button"
           aria-label="Clear"
           @click="clearInput"
@@ -47,18 +45,14 @@
       </div>
     </div>
 
-    <p
-      v-if="error"
+    <p v-if="error"
       :id="`${id}-desc`"
-      class="mt-1 font-semibold text-sm text-red-500"
-    >
+      class="mt-1 font-semibold text-sm text-red-500">
       {{ error }}
     </p>
-    <p
-      v-else-if="helper"
+    <p v-else-if="helper"
       :id="`${id}-desc`"
-      class="mt-1 font-semibold text-sm text-gray-500"
-    >
+      class="mt-1 font-semibold text-sm text-gray-500">
       {{ helper }}
     </p>
   </div>
@@ -80,7 +74,7 @@
       type: String,
       default: 'text',
     },
-    value: {
+    inputValue: {
       type: [String, Number],
       default: '',
     },
@@ -89,7 +83,7 @@
       default: '',
     },
     label: String,
-    icon: String,
+    prepend: {type:Boolean,default:false},
     helper: String,
     error: String,
     width: {
@@ -107,25 +101,20 @@
     title: String,
   })
 
-  // Emits
-  const emit = defineEmits(['update:value'])
+  const emit = defineEmits(['update:inputValue'])
 
-  // Reactive input value
-  const inputValue = ref(props.value)
+  const localValue = ref(props.inputValue)
 
-  // Watch for external changes
-  watch(() => props.value, (val) => {
-    inputValue.value = val
+  watch(() => props.inputValue, (val) => {
+    localValue.value = val
   })
 
-  // Emit changes
-  watch(inputValue, (val) => {
-    emit('update:value', val)
+  watch(localValue, (val) => {
+    emit('update:inputValue', val)
   })
 
-  // Clear input
   function clearInput() {
-    inputValue.value = ''
+    localValue.value = ''
   }
 
   const hasDesc = computed(() => !!props.error || !!props.helper)

@@ -52,22 +52,6 @@ class HomeController extends Controller
             'Transit',
             'Pharmacies',
             'ATMs',
-            'Museums',
-            'Transit',
-            'Pharmacies',
-            'ATMs',
-            'Museums',
-            'Transit',
-            'Pharmacies',
-            'ATMs',
-            'Museums',
-            'Transit',
-            'Pharmacies',
-            'ATMs',
-            'Museums',
-            'Transit',
-            'Pharmacies',
-            'ATMs',
         ];
     }
 

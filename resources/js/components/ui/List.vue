@@ -1,11 +1,13 @@
 <template>
   <ul
+    :id="id"
     v-if="items.length && showDropdown"
+    ref="dropdownRef"
     :style="dropdownStyles"
-    class="absolute bg-white border border-gray-300 rounded-md shadow-lg z-50 no-scrollbar overflow-x-auto scroll-smooth"
+    class="dropdown-list absolute bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60  no-scrollbar overflow-x-auto scroll-smooth"
   >
     <li
-      v-for="(item, index) in items"
+      v-for="item in items"
       :key="item"
       class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
       :class="{ 'bg-gray-200 font-semibold': item === selected }"
@@ -18,76 +20,76 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
-    import type { PropType, Ref } from 'vue'
-    import {ucfirst} from '../../lib/utils.ts'
-    import Icon from './Icon.vue'
-    const emit = defineEmits<{ (e: 'select', item: string): void }>()
-    const props = defineProps({
-      items: { type: Array as PropType<string[]>, default: () => [] },
-      elementRef: { type: Object as PropType<Ref<HTMLButtonElement | null>>, default: () => null },
-      showDropdown: { type: Boolean, default: false },
-      multiple: { type: Boolean, default: false }
-    })
+import { ref, watch, nextTick, onMounted } from 'vue'
+import type { PropType, Ref } from 'vue'
+import { ucfirst } from '../../lib/utils.ts'
 
-    const dropdownStyles = ref<Record<string, string>>({})
-    const selected = ref<string>('')
+const emit = defineEmits<{ (e: 'select', item: string): void }>()
 
-    function selectItem(item: string) {
-      selected.value = item
-      emit('select', item)
-    }
+const props = defineProps({
+    id: String,
+    items: { type: Array as PropType<string[]>, default: () => [] },
+    elementRef: {
+      type: Object as PropType<Ref<HTMLElement | null> | null>,
+      default: null
+    },
+    showDropdown: { type: Boolean, default: false }
+})
 
-    function dropdownPosition() {
-      const button = props.elementRef
-      if (!button) return
-      const rect = button.getBoundingClientRect()
-      const dropdownWidth = 120
-      const dropdownHeight = props.items.length * 40
-      const padding = 10
-      let top = rect.bottom + padding
-      let left = rect.left - rect.width
+const dropdownStyles = ref<Record<string, string>>({})
+const selected = ref<string>('')
+const dropdownRef = ref<HTMLElement | null>(null)
 
-      if (top + dropdownHeight > window.innerHeight) {
-        const aboveTop = rect.top - dropdownHeight - padding
-        top = aboveTop > padding ? aboveTop : window.innerHeight - dropdownHeight - padding
-      }
+function selectItem(item: string) {
+  selected.value = item
+  emit('select', item)
+}
 
-      if (left + dropdownWidth > window.innerWidth) {
-        left = window.innerWidth - dropdownWidth - padding
-      }
+function positionDropdown() {
+  const trigger = props.elementRef
+  const dropdown = dropdownRef.value
+  if (!trigger || !dropdown) return
 
-      top = Math.max(top, padding)
-      left = Math.max(left, padding)
+  const rect = trigger.getBoundingClientRect()
+  const padding = 8
+  const width = Math.max(trigger.offsetWidth, 120)
+  const height = Math.min(props.items.length * 40, 300)
 
-      dropdownStyles.value = {
-        position: 'fixed',
-        top: `${top}px`,
-        left: `${left}px`,
-        width: `${dropdownWidth}px`,
-        'max-height': '200px',
-        overflow:'auto'
-      }
-    }
+  let top = rect.bottom + padding
+  let left = rect.left
 
-    onMounted(() => {
-        nextTick(() => {
-            dropdownPosition();
-            if (props.items.length > 0 && !selected.value) {
-                selected.value = props.items[0]
-            }
-        })
-    })
+  if (top + height > window.innerHeight) {
+    top = rect.top - height - padding
+  }
 
-    watch(() => props.showDropdown, (visible) => {
-      if (visible) {
-        nextTick(() => {
-          dropdownPosition()
-          if (props.items.length > 0 && !selected.value) {
-              selected.value = props.items[0]
-          }
-        })
+  if (left + width > window.innerWidth) {
+    left = window.innerWidth - width - padding
+  }
+
+  dropdownStyles.value = {
+    position: 'fixed',
+    top: `${Math.max(top, padding)}px`,
+    left: `${Math.max(left, padding)}px`,
+    width: `${width}px`
+  }
+}
+
+watch(() => props.showDropdown, (visible) => {
+  if (visible) {
+    nextTick(() => {
+      positionDropdown()
+      if (props.items.length && !selected.value) {
+        selected.value = props.items[0]
       }
     })
+  }
+})
+
+onMounted(() => {
+  if (props.showDropdown) {
+    nextTick(() => {
+      positionDropdown()
+    })
+  }
+})
 </script>
-

@@ -1,31 +1,31 @@
 <template>
-    <div class="absolute top-40 right-4 z-20 flex flex-col items-center gap-2 md:top-24">
-        <Button id="profile" title="Profile" @click="openModal('profile')">
+    <div class="absolute top-40 right-4 z-10 flex flex-col items-center gap-2 md:top-24">
+        <Button title="Profile" @click="openModal('profile')">
             <Icon icon="person" />
         </Button>
 
-        <!-- <Button id="toggleLayers" title="Toggle layers" :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
+        <Button v-if="1==2" title="Toggle layers" :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
             @select="setLayer">
-         <Icon icon="layers"/>
-       </Button> -->
-
-        <Button id="categories" title="categories" :dropdown="categories" @select="setCategory">
-            <Icon icon="filter" />
+            <Icon icon="layers"/>
         </Button>
 
-        <Button id="fitPoints" title="Fit in screen" @click="fitPoints">
+        <Button title="categories" :dropdown="categories" @select="setCategory">
+            <Icon icon="tags" />
+        </Button>
+
+        <Button title="Fit in screen" @click="fitPoints">
             <Icon icon="fullscreen" />
         </Button>
 
-        <Button id="currentLocation" title="Current location" @click="getCurrentLocation">
+        <Button title="Current location" @click="getCurrentLocation">
             <Icon icon="crosshair" />
         </Button>
 
-        <Button id="settings" title="Settings" @click="openModal('more')">
+        <Button title="Settings" @click="openModal('more')">
             <Icon icon="three-dots-vertical" />
         </Button>
 
-        <Button v-if="selection" id="clearSelection" title="Clear selection" variant="danger" @click="clearSelection">
+        <Button v-if="selection" title="Clear selection" variant="danger" @click="clearSelection">
             <Icon icon="arrow-clockwise" color="danger" />
         </Button>
     </div>
@@ -73,10 +73,10 @@ function setCategory(category: string) {
     cmProps.category(category);
 }
 
-// function setLayer(layer: string){
-//   if(!layer || !cmProps.map) return;
-//   cmProps.map.setLayer(layer)
-// }
+function setLayer(layer: string){
+  if(!layer || !cmProps.map) return;
+  cmProps.map.setLayer(layer)
+}
 
 function fitPoints() {
     if (!cmProps.map) return;
