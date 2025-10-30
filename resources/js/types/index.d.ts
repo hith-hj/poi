@@ -27,5 +27,5 @@ export interface City {
 }
 
 export interface Category {
-  name: string;
+    name: string;
 }

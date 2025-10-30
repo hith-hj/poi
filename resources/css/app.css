@@ -9,8 +9,8 @@
     --font-sans: Instrument Sans, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
-body{
-    font-family: "Roboto Mono",system-ui, sans-serif;
+body {
+    font-family: 'Roboto Mono', system-ui, sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
@@ -89,7 +89,7 @@ body{
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity .5s ease;
+    transition: opacity 0.5s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
@@ -188,53 +188,53 @@ body{
 }*/
 
 :root {
-  --br-width: 2px;
-  --br-style: solid;
-  --bdr-radius: 9999px;
-  --color-1: red;
-  --color-2: white;
-  --color-3: white;
-  --color-4: white;
+    --br-width: 2px;
+    --br-style: solid;
+    --bdr-radius: 9999px;
+    --color-1: red;
+    --color-2: white;
+    --color-3: white;
+    --color-4: white;
 }
 
 .spiner {
-  border-style: var(--br-style);
-  border-width: var(--br-width);
-  border-radius: var(--bdr-radius);
-  outline: none;
-  animation: rotateBorders 2s infinite ease-in-out;
-  transition: 1.5s fadeIn;
+    border-style: var(--br-style);
+    border-width: var(--br-width);
+    border-radius: var(--bdr-radius);
+    outline: none;
+    animation: rotateBorders 2s infinite ease-in-out;
+    transition: 1.5s fadeIn;
 }
 
 @keyframes rotateBorders {
-  0% {
-    border-top-color: var(--color-1);
-    border-right-color: var(--color-2);
-    border-bottom-color: var(--color-3);
-    border-left-color: var(--color-4);
-  }
-  25% {
-    border-top-color: var(--color-4);
-    border-right-color: var(--color-1);
-    border-bottom-color: var(--color-2);
-    border-left-color: var(--color-3);
-  }
-  50% {
-    border-top-color: var(--color-3);
-    border-right-color: var(--color-4);
-    border-bottom-color: var(--color-1);
-    border-left-color: var(--color-2);
-  }
-  75% {
-    border-top-color: var(--color-2);
-    border-right-color: var(--color-3);
-    border-bottom-color: var(--color-4);
-    border-left-color: var(--color-1);
-  }
-  100% {
-    border-top-color: var(--color-1);
-    border-right-color: var(--color-2);
-    border-bottom-color: var(--color-3);
-    border-left-color: var(--color-4);
-  }
+    0% {
+        border-top-color: var(--color-1);
+        border-right-color: var(--color-2);
+        border-bottom-color: var(--color-3);
+        border-left-color: var(--color-4);
+    }
+    25% {
+        border-top-color: var(--color-4);
+        border-right-color: var(--color-1);
+        border-bottom-color: var(--color-2);
+        border-left-color: var(--color-3);
+    }
+    50% {
+        border-top-color: var(--color-3);
+        border-right-color: var(--color-4);
+        border-bottom-color: var(--color-1);
+        border-left-color: var(--color-2);
+    }
+    75% {
+        border-top-color: var(--color-2);
+        border-right-color: var(--color-3);
+        border-bottom-color: var(--color-4);
+        border-left-color: var(--color-1);
+    }
+    100% {
+        border-top-color: var(--color-1);
+        border-right-color: var(--color-2);
+        border-bottom-color: var(--color-3);
+        border-left-color: var(--color-4);
+    }
 }

@@ -1,6 +1,9 @@
 <template>
     <div class="absolute h-full w-screen">
-        <div ref="mapDiv" class="relative z-1 h-full w-full" />
+        <div
+            ref="mapDiv"
+            class="relative z-1 h-full w-full"
+        />
     </div>
     <Modal v-model="showPointModal">
         <template #title>{{ selectedPoint?.name || 'Point of Interest' }}</template>
@@ -14,7 +17,12 @@
         </div>
 
         <template #footer>
-            <button @click="showPointModal = false" class="rounded bg-blue-600 px-4 py-2 text-white">Close</button>
+            <button
+                @click="showPointModal = false"
+                class="rounded bg-blue-600 px-4 py-2 text-white"
+            >
+                Close
+            </button>
         </template>
     </Modal>
 </template>

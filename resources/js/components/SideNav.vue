@@ -1,48 +1,92 @@
 <template>
     <div class="absolute top-40 right-4 z-10 flex flex-col items-center gap-2 md:top-24">
-        <Button title="Profile" @click="openModal('profile')">
+        <Button
+            title="Profile"
+            @click="openModal('profile')"
+        >
             <Icon icon="person" />
         </Button>
 
-        <Button v-if="1==2" title="Toggle layers" :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
-            @select="setLayer">
-            <Icon icon="layers"/>
+        <Button
+            v-if="1 == 2"
+            title="Toggle layers"
+            :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
+            @select="setLayer"
+        >
+            <Icon icon="layers" />
         </Button>
 
-        <Button title="categories" :dropdown="categories" @select="setCategory">
+        <Button
+            title="categories"
+            :dropdown="categories"
+            @select="setCategory"
+        >
             <Icon icon="tags" />
         </Button>
 
-        <Button title="Fit in screen" @click="fitPoints">
+        <Button
+            title="Fit in screen"
+            @click="fitPoints"
+        >
             <Icon icon="fullscreen" />
         </Button>
 
-        <Button title="Current location" @click="getCurrentLocation">
+        <Button
+            title="Current location"
+            @click="getCurrentLocation"
+        >
             <Icon icon="crosshair" />
         </Button>
 
-        <Button title="Settings" @click="openModal('more')">
+        <Button
+            title="Settings"
+            @click="openModal('more')"
+        >
             <Icon icon="three-dots-vertical" />
         </Button>
 
-        <Button v-if="selection" title="Clear selection" variant="danger" @click="clearSelection">
-            <Icon icon="arrow-clockwise" color="danger" />
+        <Button
+            v-if="selection"
+            title="Clear selection"
+            variant="danger"
+            @click="clearSelection"
+        >
+            <Icon
+                icon="arrow-clockwise"
+                color="danger"
+            />
         </Button>
     </div>
 
-    <Modal v-model="modals.more" @update:modelValue="closeModal('more')">
+    <Modal
+        v-model="modals.more"
+        @update:modelValue="closeModal('more')"
+    >
         <template #title>More</template>
         <p>This is a reusable modal component.</p>
         <template #footer>
-            <button @click="closeModal('more')" class="rounded bg-blue-600 px-4 py-2 text-white">Got it</button>
+            <button
+                @click="closeModal('more')"
+                class="rounded bg-blue-600 px-4 py-2 text-white"
+            >
+                Got it
+            </button>
         </template>
     </Modal>
 
-    <Modal v-model="modals.profile" @update:modelValue="closeModal('profile')">
+    <Modal
+        v-model="modals.profile"
+        @update:modelValue="closeModal('profile')"
+    >
         <template #title>More</template>
         <p>This is a reusable modal component.</p>
         <template #footer>
-            <button @click="closeModal('profile')" class="rounded bg-blue-600 px-4 py-2 text-white">Got it</button>
+            <button
+                @click="closeModal('profile')"
+                class="rounded bg-blue-600 px-4 py-2 text-white"
+            >
+                Got it
+            </button>
         </template>
     </Modal>
 </template>
@@ -73,9 +117,9 @@ function setCategory(category: string) {
     cmProps.category(category);
 }
 
-function setLayer(layer: string){
-  if(!layer || !cmProps.map) return;
-  cmProps.map.setLayer(layer)
+function setLayer(layer: string) {
+    if (!layer || !cmProps.map) return;
+    cmProps.map.setLayer(layer);
 }
 
 function fitPoints() {
