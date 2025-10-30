@@ -1,12 +1,5 @@
 <template>
-    <div class="absolute top-40 right-4 z-10 flex flex-col items-center gap-2 md:top-24">
-        <Button
-            title="Profile"
-            @click="openModal('profile')"
-        >
-            <Icon icon="person" />
-        </Button>
-
+    <div class="absolute top-35 right-4 z-10 flex flex-col items-center gap-2 md:top-20">
         <Button
             v-if="1 == 2"
             title="Toggle layers"
@@ -16,32 +9,37 @@
             <Icon icon="layers" />
         </Button>
 
-        <Button
-            title="categories"
-            :dropdown="categories"
-            @select="setCategory"
-        >
-            <Icon icon="tags" />
+        <Button title="cities" ref="buttonComp">
+            <template #default>
+                <Icon icon="map" />
+            </template>
+
+            <template #dropdown="{ buttonRef, showDropdown, id }">
+                <List
+                    v-if="cities && cities.length"
+                    :id="id"
+                    :items="cities"
+                    :elementRef="buttonRef"
+                    :showDropdown="showDropdown"
+                    @select="setCity"/>
+            </template>
         </Button>
 
         <Button
             title="Fit in screen"
-            @click="fitPoints"
-        >
+            @click="fitPoints">
             <Icon icon="fullscreen" />
         </Button>
 
         <Button
             title="Current location"
-            @click="getCurrentLocation"
-        >
+            @click="getCurrentLocation">
             <Icon icon="crosshair" />
         </Button>
 
         <Button
             title="Settings"
-            @click="openModal('more')"
-        >
+            @click="openModal('more')">
             <Icon icon="three-dots-vertical" />
         </Button>
 
@@ -49,8 +47,7 @@
             v-if="selection"
             title="Clear selection"
             variant="danger"
-            @click="clearSelection"
-        >
+            @click="clearSelection">
             <Icon
                 icon="arrow-clockwise"
                 color="danger"
@@ -74,21 +71,6 @@
         </template>
     </Modal>
 
-    <Modal
-        v-model="modals.profile"
-        @update:modelValue="closeModal('profile')"
-    >
-        <template #title>More</template>
-        <p>This is a reusable modal component.</p>
-        <template #footer>
-            <button
-                @click="closeModal('profile')"
-                class="rounded bg-blue-600 px-4 py-2 text-white"
-            >
-                Got it
-            </button>
-        </template>
-    </Modal>
 </template>
 
 <script setup lang="ts">
@@ -97,24 +79,29 @@ import { usePage } from '@inertiajs/vue3';
 import { reactive, ref } from 'vue';
 import Button from '../components/ui/Button.vue';
 import Icon from '../components/ui/Icon.vue';
+import List from '../components/ui/List.vue';
 import Modal from '../components/ui/Modal.vue';
+import {City as TCity} from '../types/index.d.ts';
 
-const cmProps = defineProps<{
-    map: InstanceType<typeof LeafLet>;
-    category: (category: string) => void;
-    selection: boolean;
-}>();
+const cmProps = defineProps({
+    map: Object as LeafLet,
+    city: Object as TCity,
+    selection: {type:Boolean,default:false},
+    selectedCity: {
+        type: Object as PropType<TCity>,
+        // default: () => ({ name: 'damascus', coords: [33.5138, 36.2765] }),
+    },
+});
 const { props } = usePage();
-const categories = ref(props.categories);
-const emit = defineEmits<{ (e: 'clearSelection'): void; (e: 'category'): void }>();
+const cities = ref(props.cities);
+const emit = defineEmits<{ (e: 'clearSelection'): void; (e: 'city'): void }>();
 const modals = reactive({
     more: false,
     profile: false,
 });
 
-function setCategory(category: string) {
-    if (!category) return;
-    cmProps.category(category);
+function setCity(city: TCity) {
+    emit('city', city);
 }
 
 function setLayer(layer: string) {

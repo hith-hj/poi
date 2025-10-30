@@ -1,48 +1,41 @@
 <template>
   <div :class="[width, 'mx-0']">
-    <!-- Label -->
+
     <label v-if="label" :for="id" class="block text-sm font-medium text-gray-700 mb-1">
       {{ label }}
     </label>
 
-    <div class="relative">
-      <!-- prepend -->
-      <div v-if="prepend"
-        class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10 text-gray-500">
-        <slot name="prepend"/>
-      </div>
+    <div class="flex flex-row items-center text-gray-800 bg-white rounded-full shadow-lg ">
+        <div v-if="prepend"
+        class="pl-1 flex items-center cursor-pointer z-10 text-gray-500">
+            <slot name="prepend"/>
+        </div>
 
-      <!-- Input -->
-      <input
-        :id="id"
-        :name="name"
-        :type="type"
-        :title="title"
-        v-model="localValue"
-        :placeholder="placeholder"
-        :autofocus="autofocus"
-        :disabled="disabled"
-        :aria-describedby="hasDesc ? `${id}-desc` : null"
-        :aria-invalid="!!error"
-        :class="[
-          'py-2 block w-full text-sm text-gray-900 bg-white rounded-full transition-shadow shadow-sm',
-          'border border-transparent focus:outline-none focus:ring-2 focus:ring-green-500',
-          prepend ? 'pl-10' : 'pl-3',
-        ]"
-      />
-
-      <!-- Append slot & Clear button -->
-      <div class="absolute inset-y-0 right-0 pr-2 flex items-center space-x-2 z-20">
-        <Icon
-          v-if="localValue"
-          type="button"
-          aria-label="Clear"
-          @click="clearInput"
-          class="px-2"
-          icon="x"
+        <input
+            :id="id"
+            :name="name"
+            :type="type"
+            :title="title"
+            :disabled="disabled"
+            :autofocus="autofocus"
+            :aria-invalid="!!error"
+            :placeholder="placeholder"
+            :aria-describedby="hasDesc ? `${id}-desc` : null"
+            v-model="localValue"
+            :class="[
+              'p-2 w-full text-sm',
+              'focus:outline-none focus:ring-2 focus:ring-green-500',
+            ]"
         />
-        <slot name="append" />
-      </div>
+
+        <div class="pr-1 flex items-center space-x-2 z-30 cursor-pointer ">
+            <Icon
+                v-if="localValue"
+                @click="clearInput"
+                icon="x"
+            />
+            <slot name="append" />
+        </div>
     </div>
 
     <p v-if="error"

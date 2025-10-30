@@ -19,6 +19,7 @@ export interface User {
 }
 
 export interface City {
+    id?:sting | integer;
     name: string;
     coords: [number, number];
     // country: string; //'Syria';
@@ -27,5 +28,6 @@ export interface City {
 }
 
 export interface Category {
+    id:sting | integer;
     name: string;
 }

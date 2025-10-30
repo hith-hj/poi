@@ -3,14 +3,16 @@
         <title>Map</title>
     </Head>
     <TopNav
+        @categories="categories"
+        :selectedCategories="selectedCategories"
         @city="city"
-        :selectedCity="selectedCity"
     />
     <SideNav
         v-if="map"
         :map="map"
-        :category="category"
         :selection="selection"
+        :selectedCity="selectedCity"
+        @city="city"
         @clear-selection="clearSelection"
     />
     <Main>
@@ -44,34 +46,36 @@ const selectedCity = ref<TCity>({
     name: props.city,
     coords: props.view,
 });
-const selectedCategory = ref<string | null>(null);
+const selectedCategories = ref<Array>([]);
 
 function city(city: TCity) {
     selectedCity.value = city;
     map.value.setView(city.coords, 18);
+    fetchPoints()
 }
 
-function category(category) {
+function categories(categories) {
     selection.value = true;
-    console.log(category);
+    selectedCategories.value = categories
+    fetchPoints()
 }
 
 function clearSelection() {
     selection.value = false;
-    selectedCategory.value = null;
-    console.log('clearing');
+    selectedCategories.value = [];
+    fetchPoints()
 }
 
 type FetchPointsArgs = {
     center?: [number, number] | null;
     zoom?: number | null;
     bbox?: [number, number, number, number] | null;
-    category?: string | null;
+    categories?: [] | null;
     city?: string | null;
 };
 
 async function fetchPoints(args: FetchPointsArgs = {}): Promise<void> {
-    const { center, zoom, bbox } = args;
+    const { center, zoom, bbox, categories, city } = args;
 
     try {
         const params: string[] = [];
@@ -83,10 +87,13 @@ async function fetchPoints(args: FetchPointsArgs = {}): Promise<void> {
         if (Array.isArray(bbox) && bbox.length === 4) {
             params.push(`bbox=${bbox.map((n) => encodeURIComponent(n)).join(',')}`);
         }
+        if (Array.isArray(selectedCategories.value) && selectedCategories.value.length > 0) {
+            params.push(`categories=[${selectedCategories.value.map((c) => encodeURIComponent(c)).join(',')}]`);
+        }
 
         const query = params.length ? `?${params.join('&')}` : '';
         const url = `/points${query}`;
-
+        console.log(url)
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
         const newPointsData = await response.json();
