@@ -4,34 +4,31 @@
             ref="mapDiv"
             class="relative z-1 h-full w-full"
         />
+        <Modal v-model="showPointModal">
+            <template #title>{{ selectedPoint?.name || 'Point of Interest' }}</template>
+            <div v-if="selectedPoint">
+                <p><strong>Coordinates:</strong> {{ selectedPoint.coords.join(', ') }}</p>
+                <p>This is a detailed description of the point and its heritage.</p>
+            </div>
+            <div v-else>
+                <p>Loading point details...</p>
+            </div>
+            <template #footer>
+                <button
+                    @click="showPointModal = false"
+                    class="rounded bg-blue-600 px-4 py-2 text-white"
+                >
+                    Close
+                </button>
+            </template>
+        </Modal>
     </div>
-    <Modal v-model="showPointModal">
-        <template #title>{{ selectedPoint?.name || 'Point of Interest' }}</template>
-
-        <div v-if="selectedPoint">
-            <p><strong>Coordinates:</strong> {{ selectedPoint.coords.join(', ') }}</p>
-            <p>This is a detailed description of the point and its heritage.</p>
-        </div>
-        <div v-else>
-            <p>Loading point details...</p>
-        </div>
-
-        <template #footer>
-            <button
-                @click="showPointModal = false"
-                class="rounded bg-blue-600 px-4 py-2 text-white"
-            >
-                Close
-            </button>
-        </template>
-    </Modal>
 </template>
 
 <script setup lang="ts">
 import L from 'leaflet';
 import { debounce } from 'lodash-es';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import syriaGeoJson from '../lib/sy.json';
 import Modal from './ui/Modal.vue';
 
 const props = defineProps<{
@@ -47,29 +44,36 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'mapMoved', state: { center: [number, number]; zoom: number }): void;
+    (e: 'mapMoved', state: { center: [number, number]; zoom: number; bbox: number[] }): void;
 }>();
 
 const layers = {
-    normal: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }),
-    satellite: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenTopoMap' }),
-    terrain: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles © Esri',
-    }),
-    hybrid: L.layerGroup([
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    normal: () =>
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+        }),
+    light: () =>
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CartoDB',
+        }),
+    dark: () =>
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CartoDB',
+        }),
+    satellite: () =>
+        L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenTopoMap',
+        }),
+    terrain: () =>
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles © Esri',
         }),
-        L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Labels © Esri',
-        }),
-    ]),
 };
 
-let currentLayer: L.TileLayer | L.LayerGroup | null = null;
-let markersLayer: L.LayerGroup | null = null;
 const mapDiv = ref<HTMLElement | null>(null);
 const mapRef = ref<L.Map | null>(null);
+const currentLayer = ref<L.Layer | null>(null);
+const markersLayer = ref<L.LayerGroup | null>(null);
 const showPointModal = ref(false);
 const selectedPoint = ref(null);
 const calls = ref(0);
@@ -77,32 +81,105 @@ const calls = ref(0);
 function initMap() {
     if (!mapDiv.value) return;
 
-    const map = L.map(mapDiv.value, { zoomControl: false }).setView(props.view, props.zoom);
+    const map = L.map(mapDiv.value, {
+        zoomControl: false,
+        minZoom: 10,
+        maxZoom: 20,
+    }).setView(props.view, props.zoom);
+
     mapRef.value = map;
-    markersLayer = L.layerGroup().addTo(map);
-    currentLayer = layers.normal;
-    currentLayer.addTo(map);
+    markersLayer.value = L.layerGroup().addTo(map);
+
+    currentLayer.value = layers.light();
+    map.addLayer(currentLayer.value);
+
     map.on('moveend', debouncedEmitMapState);
     map.on('zoomend', debouncedEmitMapState);
-    setBoundary();
+
+    setTimeout(() => {
+        if (map._loaded) setBoundary();
+    }, 100);
 }
 
-function currentLocation() {
-    mapRef.value?.locate({ setView: true, maxZoom: 16 });
+function setLayer(layerName: keyof typeof layers) {
+    if (!mapRef.value || !mapRef.value._loaded) return;
+
+    const map = mapRef.value;
+    const newLayer = layers[layerName]?.();
+    if (!newLayer) return;
+
+    const fadeDuration = 500;
+    const oldLayer = currentLayer.value;
+
+    currentLayer.value = newLayer;
+    map.addLayer(newLayer);
+
+    const newContainer = (newLayer as any)._container;
+    if (newContainer) {
+        newContainer.style.opacity = '0';
+        newContainer.style.transition = `opacity ${fadeDuration}ms`;
+        setTimeout(() => {
+            newContainer.style.opacity = '1';
+        }, 50);
+    }
+
+    if (oldLayer && map.hasLayer(oldLayer)) {
+        const oldContainer = (oldLayer as any)._container;
+        if (oldContainer) {
+            oldContainer.style.transition = `opacity ${fadeDuration}ms`;
+            oldContainer.style.opacity = '0';
+        }
+
+        setTimeout(() => {
+            map.removeLayer(oldLayer);
+        }, fadeDuration);
+    }
+
+    setTimeout(() => {
+        if (map._loaded) setBoundary();
+    }, fadeDuration + 100);
+}
+
+function setBoundary() {
+    if (!mapRef.value || !mapRef.value._loaded) return;
+
+    // const geoLayer = L.geoJSON(syriaGeoJson, {
+    //   style: {
+    //     color: '#006400',
+    //     weight: 1,
+    //     fillColor: '#006400',
+    //     fillOpacity: 0.0,
+    //   },
+    // }).addTo(mapRef.value);
+    // mapRef.value.setMaxBounds(geoLayer.getBounds());
+
+    const syriaBounds = L.latLngBounds(L.latLng(32.0, 35.5), L.latLng(37.5, 42.0));
+
+    mapRef.value.setMaxBounds(syriaBounds);
+}
+
+function handleResize() {
+    if (mapRef.value && mapRef.value._loaded) {
+        mapRef.value.invalidateSize();
+    }
+}
+
+function destroyMap() {
+    if (mapRef.value) {
+        mapRef.value.off();
+        mapRef.value.remove();
+        mapRef.value = null;
+    }
 }
 
 function createIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
     const html = `
-    <div
-      class="animated-marker"
-      style="--marker-color: ${color}; --marker-size: ${size}px; --animation-delay: ${index * 50}ms;"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
-        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-      </svg>
-    </div>
-  `;
-
+        <div class="animated-marker" style="--marker-color: ${color}; --marker-size: ${size}px; --animation-delay: ${index * 50}ms;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+          </svg>
+        </div>
+      `;
     return L.divIcon({
         html,
         className: 'poi-marker-container',
@@ -112,73 +189,34 @@ function createIcon(color = '#0070c0', size = 32, index = 0): L.DivIcon {
     });
 }
 
+function currentLocation() {
+    if (!mapRef.value) return;
+    mapRef.value?.locate({ setView: true, maxZoom: 16 });
+}
+
 function fitPoints() {
-    if (!mapRef?.value) return;
+    if (!mapRef.value || !markersLayer.value) return;
 
-    const layer = (markersLayer && ('value' in markersLayer ? markersLayer.value : markersLayer)) as any;
-    if (!layer) return;
-
-    let bounds: L.LatLngBounds | null = null;
-    if (typeof layer.getBounds === 'function') {
-        try {
-            bounds = layer.getBounds();
-        } catch {
-            bounds = null;
-        }
-    }
-
-    if (!bounds || !bounds.isValid || !bounds.isValid()) {
-        bounds = buildBounds(layer);
-    }
-
-    if (bounds && bounds.isValid && bounds.isValid()) {
+    const bounds = buildBounds(markersLayer.value);
+    if (bounds && bounds.isValid()) {
         mapRef.value.fitBounds(bounds, { padding: [5, 5], zoom: 20 });
     }
 }
 
 function buildBounds(layer) {
     const latlngs: L.LatLng[] = [];
-    const layers = typeof layer.getLayers === 'function' ? layer.getLayers() : [];
+    const layers = layer.getLayers?.() || [];
     for (const l of layers) {
-        if (l && typeof l.getLatLng === 'function') {
-            const ll = l.getLatLng();
-            if (ll && typeof ll.lat === 'number' && typeof ll.lng === 'number') latlngs.push(ll);
-        } else if (l && l.getBounds && typeof l.getBounds === 'function') {
+        if (l.getLatLng) {
+            latlngs.push(l.getLatLng());
+        } else if (l.getBounds) {
             const b = l.getBounds();
-            if (b && b.isValid && b.isValid()) {
+            if (b.isValid()) {
                 latlngs.push(b.getSouthWest(), b.getNorthEast());
             }
         }
     }
-    if (latlngs.length) return L.latLngBounds(latlngs);
-}
-
-function setLayer(layerName: keyof typeof layers) {
-    if (!mapRef?.value) return;
-    const map = mapRef.value;
-    const newLayer = layers[layerName];
-    if (!newLayer) {
-        console.warn(`Layer "${String(layerName)}" not found`);
-        return;
-    }
-
-    if (currentLayer && map.hasLayer(currentLayer)) {
-        try {
-            map.removeLayer(currentLayer);
-        } catch (err) {
-            console.warn('Failed to remove current layer', err);
-        }
-    }
-
-    try {
-        const layerToAdd = typeof newLayer === 'function' ? newLayer() : newLayer;
-        currentLayer = layerToAdd as any;
-        map.addLayer(currentLayer);
-    } catch (err) {
-        console.error('Failed to add new layer', err);
-        return;
-    }
-    setBoundary();
+    return latlngs.length ? L.latLngBounds(latlngs) : null;
 }
 
 function setView(latlng: [number, number], zm?: number) {
@@ -186,59 +224,8 @@ function setView(latlng: [number, number], zm?: number) {
     mapRef.value.setView(latlng, zm ?? mapRef.value.getZoom());
 }
 
-function setBoundary() {
-    if (!mapRef.value) return;
-    const highlightStyle = {
-        color: '#006400',
-        weight: 1,
-        fillColor: '#006400',
-        fillOpacity: 0.0,
-    };
-
-    const geoLayer = L.geoJSON(syriaGeoJson, {
-        style: highlightStyle,
-        // onEachFeature: (feature, layer) => {
-        //     layer.on({
-        //         mouseover: () => layer.setStyle({ fillOpacity: 0.0 }),
-        //         mouseout: () => layer.setStyle({ fillOpacity: 0.04 }),
-        //         click: () => setView(midpointSimple(
-        //             layer.getBounds()._southWest,
-        //             layer.getBounds()._northEast
-        //         ),getZoom()),
-        //     });
-        // },
-    }).addTo(mapRef.value);
-
-    setMaxBounds(geoLayer.getBounds());
-}
-
-function setMaxBounds(bounds) {
-    if (!mapRef.value) return;
-    mapRef.value.setMaxBounds(bounds);
-}
-
-// function midpointSimple(a, b) {
-//   return {
-//     lat: (a.lat + b.lat) / 2,
-//     lng: (a.lng + b.lng) / 2,
-//   };
-// }
-
-// function fitBounds(bounds){
-//     if (!mapRef.value) return;
-//     mapRef.value.fitBounds(bounds);
-// }
-
 function getZoom() {
-    if (!mapRef.value) return;
     return mapRef.value?.getZoom();
-}
-
-function destroyMap() {
-    if (!mapRef.value) return;
-    mapRef.value.off();
-    mapRef.value.remove();
-    mapRef.value = null;
 }
 
 function openModal(point) {
@@ -278,33 +265,25 @@ const clickHandler = (e: L.LeafletMouseEvent) => {
 onMounted(async () => {
     await nextTick();
     initMap();
-    window.addEventListener('resize', () => mapRef.value?.invalidateSize());
+    window.addEventListener('resize', () => handleResize);
     mapRef.value.on('dblclick', clickHandler);
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('resize', () => mapRef.value?.invalidateSize());
+    window.removeEventListener('resize', () => handleResize);
     destroyMap();
 });
 
 watch(
-    () => props.view,
-    (v) => mapRef.value?.setView(v, mapRef.value.getZoom()),
-);
-watch(
-    () => props.zoom,
-    (z) => mapRef.value?.setZoom(z),
-);
-watch(
     () => props.points,
-    (newPoints) => {
-        if (!mapRef.value || !markersLayer) return;
+    (newPoint) => {
+        if (!mapRef.value || !markersLayer.value) return;
 
-        if (markersLayer.getLayers().length > 200) {
-            markersLayer.clearLayers();
+        if (markersLayer.value.getLayers().length > 200) {
+            markersLayer.value.clearLayers();
         }
 
-        newPoints.forEach((point, index) => {
+        newPoint.forEach((point, index) => {
             const marker = L.marker(point.coords, {
                 icon: createIcon(point.color, point.size, index),
             });
@@ -312,7 +291,7 @@ watch(
                 openModal(point);
             });
 
-            markersLayer?.addLayer(marker);
+            markersLayer?.value?.addLayer(marker);
         });
     },
     { deep: true, immediate: true },

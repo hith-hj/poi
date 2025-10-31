@@ -1,16 +1,20 @@
 <template>
     <div class="absolute top-5 left-1/2 z-10 w-full -translate-x-1/2 transform px-2">
         <div class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-            <div class="w-full min-w-0 px-1 md:w-1/2 ">
+            <div class="w-full min-w-0 px-1 md:w-1/2">
                 <div class="relative flex flex-col gap-2">
                     <div class="min-w-0 flex-1">
                         <Input
                             id="searchInput"
                             v-model:inputValue="search"
                             placeholder="Search location"
-                            :prepend="true">
+                            :prepend="true"
+                        >
                             <template #prepend>
-                                <Icon icon="person" @click="profile = true"/>
+                                <Icon
+                                    icon="person"
+                                    @click="profile = true"
+                                />
                             </template>
 
                             <template #append>
@@ -18,12 +22,16 @@
                             </template>
                         </Input>
                     </div>
-                    <ul v-if="filteredCities.length > 0"
-                        class="absolute top-13 z-10 w-full rounded-sm bg-white shadow">
-                        <li v-for="(city, index) in filteredCities"
+                    <ul
+                        v-if="filteredCities.length > 0"
+                        class="absolute top-13 z-10 w-full rounded-sm bg-white shadow"
+                    >
+                        <li
+                            v-for="(city, index) in filteredCities"
                             @click="selectCity(city)"
                             :key="city.name + '-' + index"
-                            class="cursor-pointer p-3 hover:bg-gray-100">
+                            class="cursor-pointer p-3 hover:bg-gray-100"
+                        >
                             {{ ucfirst(city.name) }}
                         </li>
                     </ul>
@@ -34,14 +42,16 @@
                 <Slider>
                     <div
                         v-if="categories.length > 0"
-                        class="flex max-w-screen min-w-0 gap-3 select-none py-1">
+                        class="flex max-w-screen min-w-0 gap-3 py-1 select-none"
+                    >
                         <Button
                             v-for="(category, index) in categories"
                             :key="category + '-' + index"
                             :data-cat="category"
                             :text="category"
                             @click="toggleCategory(category)"
-                            :class="{ 'font-semibold': isSelected(category) }">
+                            :class="{ 'font-semibold': isSelected(category) }"
+                        >
                             <span class="truncate">
                                 {{ ucfirst(category) }}
                             </span>
@@ -70,17 +80,17 @@
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { ucfirst } from '../lib/utils.ts';
-import { computed, ref, reactive, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import Slider from '../components/Slider.vue';
 import Button from '../components/ui/Button.vue';
+import Icon from '../components/ui/Icon.vue';
 import Input from '../components/ui/Input.vue';
 import Modal from '../components/ui/Modal.vue';
-import Slider from '../components/Slider.vue';
-import Icon from '../components/ui/Icon.vue';
+import { ucfirst } from '../lib/utils.ts';
 
 const emit = defineEmits<{
-    (e: 'categories' ,categories: Array):void;
-    (e: 'city' ,city: String):void;
+    (e: 'categories', categories: Array): void;
+    (e: 'city', city: string): void;
 }>();
 const { props } = usePage();
 const categories = ref(props.categories);
@@ -88,33 +98,38 @@ const search = ref('');
 const prop = defineProps({
     selectedCategories: {
         type: Array,
-        default: ()=>[]
+        default: () => [],
     },
 });
 
-let profile = ref<Boolean>(false)
+const selected = ref([...prop.selectedCategories]);
+const profile = ref<boolean>(false);
 
 const filteredCities = computed(() =>
-    search.value.length > 0 ?
-    props.cities.filter((city) => city.name.toLowerCase().includes(search.value.toLowerCase())) : [],
+    search.value.length > 0 ? props.cities.filter((city) => city.name.toLowerCase().includes(search.value.toLowerCase())) : [],
 );
 
 const isSelected = (category) => {
-    return prop.selectedCategories.includes(category.toLowerCase())
-}
+    return selected.value.includes(category.toLowerCase());
+};
 
 function toggleCategory(category) {
-    if(!isSelected(category)){
-        prop.selectedCategories.push(category.toLowerCase())
-    }else{
-        prop.selectedCategories.pop(category.toLowerCase())
+    const cat = category.toLowerCase();
+
+    if (!isSelected(cat)) {
+        selected.value.push(cat);
+    } else {
+        selected.value = selected.value.filter((c) => c !== cat);
     }
-    emit('categories',prop.selectedCategories);
+
+    emit('categories', selected.value);
 }
 
 function selectCity(city) {
     emit('city', city);
 }
 
-watch(search, (val) => {});
+watch(search, (val) => {
+    console.log(val);
+});
 </script>

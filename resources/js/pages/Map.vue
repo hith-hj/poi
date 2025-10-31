@@ -51,19 +51,19 @@ const selectedCategories = ref<Array>([]);
 function city(city: TCity) {
     selectedCity.value = city;
     map.value.setView(city.coords, 18);
-    fetchPoints()
+    fetchPoints();
 }
 
 function categories(categories) {
-    selection.value = true;
-    selectedCategories.value = categories
-    fetchPoints()
+    selectedCategories.value = categories;
+    selection.value = selectedCategories.value.length > 0;
+    fetchPoints();
 }
 
 function clearSelection() {
     selection.value = false;
-    selectedCategories.value = [];
-    fetchPoints()
+    selectedCategories.value.length = 0;
+    fetchPoints();
 }
 
 type FetchPointsArgs = {
@@ -75,7 +75,7 @@ type FetchPointsArgs = {
 };
 
 async function fetchPoints(args: FetchPointsArgs = {}): Promise<void> {
-    const { center, zoom, bbox, categories, city } = args;
+    const { center, zoom, bbox } = args;
 
     try {
         const params: string[] = [];
@@ -93,7 +93,7 @@ async function fetchPoints(args: FetchPointsArgs = {}): Promise<void> {
 
         const query = params.length ? `?${params.join('&')}` : '';
         const url = `/points${query}`;
-        console.log(url)
+        console.log(url);
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
         const newPointsData = await response.json();

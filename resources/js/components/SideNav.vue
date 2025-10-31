@@ -1,17 +1,30 @@
 <template>
     <div class="absolute top-35 right-4 z-10 flex flex-col items-center gap-2 md:top-20">
         <Button
-            v-if="1 == 2"
             title="Toggle layers"
-            :dropdown="['normal', 'satellite', 'hybrid', 'terrain']"
-            @select="setLayer"
+            ref="buttonComp"
         >
-            <Icon icon="layers" />
+            <template #default>
+                <Icon icon="layers" />
+            </template>
+
+            <template #dropdown="{ buttonRef, showDropdown, id }">
+                <List
+                    :id="id"
+                    :items="['light', 'dark', 'normal', 'satellite']"
+                    :elementRef="buttonRef"
+                    :showDropdown="showDropdown"
+                    @select="setLayer"
+                />
+            </template>
         </Button>
 
-        <Button title="cities" ref="buttonComp">
+        <Button
+            title="cities"
+            ref="buttonComp"
+        >
             <template #default>
-                <Icon icon="map" />
+                <Icon icon="geo" />
             </template>
 
             <template #dropdown="{ buttonRef, showDropdown, id }">
@@ -21,25 +34,29 @@
                     :items="cities"
                     :elementRef="buttonRef"
                     :showDropdown="showDropdown"
-                    @select="setCity"/>
+                    @select="setCity"
+                />
             </template>
         </Button>
 
         <Button
             title="Fit in screen"
-            @click="fitPoints">
+            @click="fitPoints"
+        >
             <Icon icon="fullscreen" />
         </Button>
 
         <Button
             title="Current location"
-            @click="getCurrentLocation">
+            @click="getCurrentLocation"
+        >
             <Icon icon="crosshair" />
         </Button>
 
         <Button
             title="Settings"
-            @click="openModal('more')">
+            @click="openModal('more')"
+        >
             <Icon icon="three-dots-vertical" />
         </Button>
 
@@ -47,7 +64,8 @@
             v-if="selection"
             title="Clear selection"
             variant="danger"
-            @click="clearSelection">
+            @click="clearSelection"
+        >
             <Icon
                 icon="arrow-clockwise"
                 color="danger"
@@ -70,7 +88,6 @@
             </button>
         </template>
     </Modal>
-
 </template>
 
 <script setup lang="ts">
@@ -81,12 +98,12 @@ import Button from '../components/ui/Button.vue';
 import Icon from '../components/ui/Icon.vue';
 import List from '../components/ui/List.vue';
 import Modal from '../components/ui/Modal.vue';
-import {City as TCity} from '../types/index.d.ts';
+import { City as TCity } from '../types/index.d.ts';
 
 const cmProps = defineProps({
     map: Object as LeafLet,
     city: Object as TCity,
-    selection: {type:Boolean,default:false},
+    selection: { type: Boolean, default: false },
     selectedCity: {
         type: Object as PropType<TCity>,
         // default: () => ({ name: 'damascus', coords: [33.5138, 36.2765] }),
