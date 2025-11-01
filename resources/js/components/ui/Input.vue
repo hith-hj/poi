@@ -6,8 +6,7 @@
     </label>
 
     <div class="flex flex-row items-center text-gray-800 bg-white rounded-full shadow-lg ">
-        <div v-if="prepend"
-        class="pl-1 flex items-center cursor-pointer z-10 text-gray-500">
+        <div v-if="prepend" class="pl-1 flex items-center cursor-pointer text-gray-500">
             <slot name="prepend"/>
         </div>
 

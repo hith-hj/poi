@@ -2,17 +2,13 @@
     <Head>
         <title>Map</title>
     </Head>
-    <TopNav
-        @categories="categories"
-        :selectedCategories="selectedCategories"
-        @city="city"
-    />
-    <SideNav
-        v-if="map"
+    <MapNav
         :map="map"
         :selection="selection"
+        :selectedCategories="selectedCategories"
         :selectedCity="selectedCity"
         @city="city"
+        @categories="categories"
         @clear-selection="clearSelection"
     />
     <Main>
@@ -29,8 +25,7 @@
 import { Head, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import LeafLet from '../components/LeafLet.vue';
-import SideNav from '../components/SideNav.vue';
-import TopNav from '../components/TopNav.vue';
+import MapNav from '../components/MapNav.vue';
 import { emitter } from '../lib/emitter.ts';
 import { City as TCity } from '../types/index.d.js';
 

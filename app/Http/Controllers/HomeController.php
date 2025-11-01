@@ -47,11 +47,28 @@ class HomeController extends Controller
     {
         return [
             'Hotels',
-            'Things',
             'Museums',
-            'Transit',
             'Pharmacies',
             'ATMs',
+            'Bars',
+            'Restaurants',
+            'Delivery',
+            'Cafes',
+            'Parks',
+            'Gyms',
+            'Movies',
+            'Art',
+            'Nightlife',
+            'Libraries',
+            'Shoping',
+            'Elcetronics',
+            'Sports',
+            'Cars',
+            'Groceries',
+            'Car wash',
+            'Car rental',
+            'Parking',
+            'Beauty',
         ];
     }
 

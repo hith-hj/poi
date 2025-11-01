@@ -4,7 +4,7 @@
       ref="buttonRef"
       :id="id"
       :type="type"
-      :title="text"
+      :title="title"
       :aria-label="text"
       :class="buttonClasses"
       @click="handleClick"
@@ -35,6 +35,7 @@ const props = defineProps({
   id: { type: String, default: () => `btn_${Math.random().toString(36).slice(2, 8)}` },
   type: { type: String, default: 'button' },
   text: { type: String, default: '' },
+  title: { type: String, default: '' },
   icon: { type: String, default: null },
   size: { type: String, default: 'md' },
   variant: { type: String, default: 'default' }

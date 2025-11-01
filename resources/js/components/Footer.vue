@@ -1,16 +1,16 @@
 <template>
-    <div class="absolute bottom-5 left-1/2 z-20 w-full -translate-x-1/2 transform px-2">
+    <div class="absolute bottom-5 left-1/2 z-2 w-full -translate-x-1/2 transform px-2">
         <div class="flex flex-col items-center justify-between gap-2 text-center md:flex-row">
             <div
                 class="hidden w-full min-w-0 md:block"
                 id="posts"
             >
-                <Slider>
+                <Slider :autoSlide="true">
                     <template
                         v-for="(n, index) in 10"
                         :key="index"
                     >
-                        <div class="min-w-1/2 rounded-full bg-white p-2">post {{ n }} {{ index }}</div>
+                        <div class="min-w-full rounded-full bg-white p-2">post {{ n }}</div>
                     </template>
                 </Slider>
             </div>
@@ -38,12 +38,12 @@
                 class="w-full min-w-0"
                 id="ads"
             >
-                <Slider>
+                <Slider :autoSlide="true">
                     <template
                         v-for="(n, index) in 10"
                         :key="index"
                     >
-                        <div class="min-w-1/2 rounded-full bg-white p-2">ad {{ n }} {{ index }}</div>
+                        <div class="min-w-full rounded-full bg-white p-2">ad {{ n }}</div>
                     </template>
                 </Slider>
             </div>
