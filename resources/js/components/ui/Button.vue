@@ -1,5 +1,5 @@
 <template>
-  <div class="relative inline-block">
+  <div class="relativex block">
     <button
       ref="buttonRef"
       :id="id"
@@ -9,7 +9,9 @@
       :class="buttonClasses"
       @click="handleClick"
     >
-      <slot />
+      <div class="flex justify-evenly gap-1">
+        <slot />
+      </div>
     </button>
 
     <slot
@@ -34,9 +36,8 @@ const emit = defineEmits<{
 const props = defineProps({
   id: { type: String, default: () => `btn_${Math.random().toString(36).slice(2, 8)}` },
   type: { type: String, default: 'button' },
-  text: { type: String, default: '' },
-  title: { type: String, default: '' },
-  icon: { type: String, default: null },
+  text: { type: [String,Number], default: null },
+  title: { type: [String,Number], default: null },
   size: { type: String, default: 'md' },
   variant: { type: String, default: 'default' }
 })

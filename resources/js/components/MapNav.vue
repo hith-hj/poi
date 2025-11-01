@@ -1,7 +1,7 @@
 <template>
-    <div class="absolute top-2 left-1/2 z-2 w-full -translate-x-1/2 transform px-2">
+    <div class="absolute top-2 left-1/2 z-2 w-full -translate-x-1/2 transform px-1">
         <div class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-            <div class="w-full min-w-0 px-1 md:w-1/2">
+            <div class="w-full min-w-0 px-1 md:w-1/4">
                 <div class="relative flex flex-col gap-2">
                     <div class="min-w-0 flex-1">
                         <Input
@@ -12,13 +12,14 @@
                         >
                             <template #prepend>
                                 <Icon
+                                    size="lg"
                                     icon="person"
                                     @click="openModal('profile')"
                                 />
                             </template>
 
                             <template #append>
-                                <Icon icon="search" />
+                                <Icon icon="search" size="sm"/>
                             </template>
                         </Input>
                     </div>
@@ -38,9 +39,9 @@
                 </div>
             </div>
 
-            <div class="w-full min-w-0 px-1 md:w-1/2">
+            <div class="w-full min-w-0 px-1 md:w-3/4">
                 <div class="flex items-center justify-evenly">
-                    <div class="w-10/12">
+                    <div class="w-3/4">
                         <Slider>
                             <div
                                 v-if="categories.length > 0"
@@ -62,7 +63,7 @@
                         </Slider>
                     </div>
 
-                    <div class="w-2/12">
+                    <div class="w-1/4">
                         <div class="flex items-center justify-end gap-2">
                             <Button
                                 v-if="selection"
@@ -75,6 +76,9 @@
                                     color="danger"
                                     size="sm"
                                 />
+                                <span class="truncate">
+                                    {{ selectedCategories.length }}
+                                </span>
                             </Button>
 
                             <Dropdown
@@ -99,11 +103,14 @@
                                         />
                                     </template>
                                     <template
-                                        v-for="item in layers"
-                                        :key="item.name"
+                                        v-for="layer in layers"
+                                        :key="layer.name"
                                     >
-                                        <Button @click="setLayer(item.name)">
-                                            <p class="truncate px-2">{{ ucfirst(item.name) }}</p>
+                                        <Button @click="setLayer(layer.name)">
+                                            <p class="truncate px-2"
+                                            :class="{'font-extrabold':layer.name== selectedLayer}">
+                                                {{ ucfirst(layer.name) }}
+                                            </p>
                                         </Button>
                                     </template>
                                 </Dropdown>
@@ -121,7 +128,10 @@
                                             :key="city.name"
                                         >
                                             <Button @click="setCity(city)">
-                                                <p class="truncate px-2">{{ ucfirst(city.name) }}</p>
+                                                <p class="truncate px-2"
+                                                :class="{'font-extrabold':city.name== selectedCity.name}">
+                                                    {{ ucfirst(city.name) }}
+                                                </p>
                                             </Button>
                                         </template>
                                     </div>
@@ -145,6 +155,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -185,27 +196,20 @@ const emit = defineEmits<{
 }>();
 
 const cmProps = defineProps({
-    map: Object, // type: Object as PropType<LeafLet>, assuming LeafLet type
-    city: Object as PropType<TCity>,
-    selectedCity: {
-        type: Object as PropType<TCity>,
-    },
-    selectedCategories: {
-        type: Array as PropType<string[]>,
-        default: () => [],
-    },
+    map: Object as PropType<LeafLet>,
+    selectedLayer: {type:String,default:'light'},
+    selectedCity: {type: Object as PropType<TCity>,},
+    selectedCategories: {type: Array ,default: () => [],},
     selection: { type: Boolean, default: false },
 });
 
 const { props } = usePage();
 const categories = ref(props.categories);
 const cities = ref(props.cities);
+const selectedLayer = ref(cmProps.selectedLayer);
 const search = ref('');
 const selected = ref([...cmProps.selectedCategories]);
-const modals = reactive({
-    more: false,
-    profile: false,
-});
+const modals = reactive({profile: false,});
 
 const layers = {
     light: { name: 'light', icon: '' },
@@ -229,6 +233,7 @@ function setCity(city: TCity) {
 
 function setLayer(layer: string) {
     if (!layer || !cmProps.map) return;
+    selectedLayer.value = layer
     cmProps.map.setLayer(layer);
 }
 
