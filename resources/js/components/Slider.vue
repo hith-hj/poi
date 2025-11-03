@@ -52,6 +52,10 @@ const props = defineProps({
         type: Number,
         default: 3000,
     },
+    showHandles:{
+        type:Boolean,
+        default:true,
+    },
 });
 
 const slider = ref<HTMLElement | null>(null);
@@ -75,7 +79,7 @@ const updateButtonVisibility = () => {
     const scrollable = el.scrollWidth > el.clientWidth;
     showButtons.value = !isMobile() && scrollable;
 
-    if (!scrollable || props.autoSlide) {
+    if (!scrollable || props.autoSlide || !props.showHandles) {
         showLeftButton.value = false;
         showRightButton.value = false;
         return;
@@ -173,8 +177,7 @@ onMounted(async () => {
     }
 
     if (slider.value?.firstElementChild) {
-        scrollAmount = slider.value?.firstElementChild?.clientWidth;
-        // slider.value?.firstElementChild?.children.length ;
+        scrollAmount = slider.value?.firstElementChild?.clientWidth + 3;
     }
 
     if (props.autoSlide) {

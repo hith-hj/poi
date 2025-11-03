@@ -22,7 +22,7 @@
             @mapMoved="fetchPoints"
         />
     </Main>
-    <Sidepanel v-model="show" side="left" maxWidthClass="max-w-sm">
+    <!-- <Sidepanel v-model="show" side="left" maxWidthClass="max-w-sm">
         <template #trigger>
           <button @click="show = true" class="px-4 py-2 bg-green-600 text-white rounded">
               Open Panel
@@ -34,7 +34,7 @@
         <p>
           Panel content goes here. Backdrop click, Escape, or swipe down on mobile will close it.
         </p>
-    </Sidepanel>
+    </Sidepanel> -->
 </template>
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';

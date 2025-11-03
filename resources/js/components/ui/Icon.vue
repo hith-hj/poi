@@ -1,5 +1,5 @@
 <template>
-    <span class="flex items-center justify-center" :class="iconSize" v-bind="$attrs">
+    <span class="flex items-center justify-center cursor-pointer" :class="iconSize" v-bind="$attrs">
         <i :class="iconClasse"></i>
     </span>
 </template>

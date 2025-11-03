@@ -1,6 +1,6 @@
 <template>
-    <div class="absolute bottom-5 left-1/2 z-2 w-full -translate-x-1/2 transform px-2">
-        <div class="flex flex-col items-center justify-between gap-2 text-center md:flex-row">
+    <div class="absolute bottom-5 left-1/2 z-2 w-full -translate-x-1/2 transform px-2 backdrop-blur shadow-lg">
+        <div class="flex flex-col items-center justify-between gap-1 text-center md:flex-row">
             <div
                 class="hidden w-full min-w-0 md:block"
                 id="posts"
@@ -10,7 +10,7 @@
                         v-for="(n, index) in 10"
                         :key="index"
                     >
-                        <div class="min-w-full rounded-full bg-white p-2">post {{ n }}</div>
+                        <div class="min-w-full bg-white p-2">post {{ n }}</div>
                     </template>
                 </Slider>
             </div>
@@ -19,7 +19,7 @@
                 class="w-full min-w-0"
                 id="spinner"
             >
-                <div class="items-top flex flex-col rounded-full py-1 backdrop-blur-lg">
+                <div class="items-top flex flex-col rounded-full py-1 bg-transparent ">
                     <h1 class="text-xl font-extrabold tracking-widest text-red-500">POI</h1>
                     <Transition name="fade">
                         <Loader
@@ -43,7 +43,7 @@
                         v-for="(n, index) in 10"
                         :key="index"
                     >
-                        <div class="min-w-full rounded-full bg-white p-2">ad {{ n }}</div>
+                        <div class="min-w-full bg-white p-2">ad {{ n }}</div>
                     </template>
                 </Slider>
             </div>

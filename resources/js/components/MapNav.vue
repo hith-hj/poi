@@ -42,7 +42,7 @@
             <div class="w-full min-w-0 px-1 md:w-3/4">
                 <div class="flex items-center justify-evenly">
                     <div class="w-3/4">
-                        <Slider>
+                        <Slider >
                             <div
                                 v-if="categories.length > 0"
                                 class="flex max-w-screen min-w-0 gap-4 py-1 select-none"
