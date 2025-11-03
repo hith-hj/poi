@@ -22,26 +22,12 @@
             @mapMoved="fetchPoints"
         />
     </Main>
-    <!-- <Sidepanel v-model="show" side="left" maxWidthClass="max-w-sm">
-        <template #trigger>
-          <button @click="show = true" class="px-4 py-2 bg-green-600 text-white rounded">
-              Open Panel
-          </button>
-        </template>
-
-        <template #title>My Panel</template>
-
-        <p>
-          Panel content goes here. Backdrop click, Escape, or swipe down on mobile will close it.
-        </p>
-    </Sidepanel> -->
 </template>
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 import LeafLet from '../components/LeafLet.vue';
 import MapNav from '../components/MapNav.vue';
-import Sidepanel from '../components/ui/Sidepanel.vue';
 import { emitter } from '../lib/emitter.ts';
 import { City as TCity } from '../types/index.d.js';
 
@@ -58,7 +44,7 @@ const selectedCity = ref<TCity>({
     coords: props.view,
 });
 const selectedCategories = ref<Array>([]);
-const show = ref(false);
+// const show = ref(false);
 
 function city(city: TCity) {
     selectedCity.value = city;

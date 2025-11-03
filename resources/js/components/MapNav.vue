@@ -19,7 +19,10 @@
                             </template>
 
                             <template #append>
-                                <Icon icon="search" size="sm"/>
+                                <Icon
+                                    icon="search"
+                                    size="sm"
+                                />
                             </template>
                         </Input>
                     </div>
@@ -42,7 +45,7 @@
             <div class="w-full min-w-0 px-1 md:w-3/4">
                 <div class="flex items-center justify-evenly">
                     <div class="w-3/4">
-                        <Slider >
+                        <Slider>
                             <div
                                 v-if="categories.length > 0"
                                 class="flex max-w-screen min-w-0 gap-4 py-1 select-none"
@@ -107,8 +110,10 @@
                                         :key="layer.name"
                                     >
                                         <Button @click="setLayer(layer.name)">
-                                            <p class="truncate px-2"
-                                            :class="{'font-extrabold':layer.name== selectedLayer}">
+                                            <p
+                                                class="truncate px-2"
+                                                :class="{ 'font-extrabold': layer.name == selectedLayer }"
+                                            >
                                                 {{ ucfirst(layer.name) }}
                                             </p>
                                         </Button>
@@ -128,8 +133,10 @@
                                             :key="city.name"
                                         >
                                             <Button @click="setCity(city)">
-                                                <p class="truncate px-2"
-                                                :class="{'font-extrabold':city.name== selectedCity.name}">
+                                                <p
+                                                    class="truncate px-2"
+                                                    :class="{ 'font-extrabold': city.name == selectedCity.name }"
+                                                >
                                                     {{ ucfirst(city.name) }}
                                                 </p>
                                             </Button>
@@ -155,7 +162,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -197,9 +203,9 @@ const emit = defineEmits<{
 
 const cmProps = defineProps({
     map: Object as PropType<LeafLet>,
-    selectedLayer: {type:String,default:'light'},
-    selectedCity: {type: Object as PropType<TCity>,},
-    selectedCategories: {type: Array ,default: () => [],},
+    selectedLayer: { type: String, default: 'light' },
+    selectedCity: { type: Object as PropType<TCity> },
+    selectedCategories: { type: Array, default: () => [] },
     selection: { type: Boolean, default: false },
 });
 
@@ -209,7 +215,7 @@ const cities = ref(props.cities);
 const selectedLayer = ref(cmProps.selectedLayer);
 const search = ref('');
 const selected = ref([...cmProps.selectedCategories]);
-const modals = reactive({profile: false,});
+const modals = reactive({ profile: false });
 
 const layers = {
     light: { name: 'light', icon: '' },
@@ -233,7 +239,7 @@ function setCity(city: TCity) {
 
 function setLayer(layer: string) {
     if (!layer || !cmProps.map) return;
-    selectedLayer.value = layer
+    selectedLayer.value = layer;
     cmProps.map.setLayer(layer);
 }
 

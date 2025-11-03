@@ -1,6 +1,22 @@
+<!--
+usage
+<Sidepanel v-model="show" side="left" maxWidthClass="max-w-sm">
+        <template #trigger>
+          <button @click="show = true" class="px-4 py-2 bg-green-600 text-white rounded">
+              Open Panel
+          </button>
+        </template>
+
+        <template #title>My Panel</template>
+
+        <p>
+          Panel content goes here. Backdrop click, Escape, or swipe down on mobile will close it.
+        </p>
+    </Sidepanel>
+
+ -->
 <template>
   <div>
-    <!-- Trigger slot (default button) -->
     <slot name="trigger">
       <button @click="open" class="px-4 py-2 bg-blue-600 text-white rounded">Open Panel</button>
     </slot>

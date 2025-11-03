@@ -1,5 +1,5 @@
 <template>
-    <div class="absolute bottom-5 left-1/2 z-2 w-full -translate-x-1/2 transform px-2 backdrop-blur shadow-lg">
+    <div class="absolute bottom-5 left-1/2 z-2 w-full -translate-x-1/2 transform px-2 shadow-lg backdrop-blur">
         <div class="flex flex-col items-center justify-between gap-1 text-center md:flex-row">
             <div
                 class="hidden w-full min-w-0 md:block"
@@ -19,7 +19,7 @@
                 class="w-full min-w-0"
                 id="spinner"
             >
-                <div class="items-top flex flex-col rounded-full py-1 bg-transparent ">
+                <div class="items-top flex flex-col rounded-full bg-transparent py-1">
                     <h1 class="text-xl font-extrabold tracking-widest text-red-500">POI</h1>
                     <Transition name="fade">
                         <Loader

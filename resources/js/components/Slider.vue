@@ -52,9 +52,9 @@ const props = defineProps({
         type: Number,
         default: 3000,
     },
-    showHandles:{
-        type:Boolean,
-        default:true,
+    showHandles: {
+        type: Boolean,
+        default: true,
     },
 });
 
